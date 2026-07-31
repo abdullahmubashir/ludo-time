@@ -1,0 +1,255 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Ludo Time</title>
+<meta name="theme-color" content="#122a3e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Ludo Time">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="Ludo Time — roll, race and rule the board. 2 to 6 players.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%23122a3e'/%3E%3Crect x='72' y='72' width='368' height='368' rx='28' fill='%23ffffff'/%3E%3Crect x='84' y='84' width='150' height='150' rx='10' fill='%23d21f26'/%3E%3Crect x='278' y='84' width='150' height='150' rx='10' fill='%230d8f42'/%3E%3Crect x='278' y='278' width='150' height='150' rx='10' fill='%23e8a900'/%3E%3Crect x='84' y='278' width='150' height='150' rx='10' fill='%230f63c4'/%3E%3Crect x='124' y='124' width='70' height='70' fill='%23ffffff'/%3E%3Crect x='318' y='124' width='70' height='70' fill='%23ffffff'/%3E%3Crect x='318' y='318' width='70' height='70' fill='%23ffffff'/%3E%3Crect x='124' y='318' width='70' height='70' fill='%23ffffff'/%3E%3Crect x='196' y='196' width='120' height='120' rx='22' fill='%23fbf8f0' stroke='%23cfc7b4' stroke-width='6'/%3E%3Ccircle cx='228' cy='228' r='15' fill='%231b1712'/%3E%3Ccircle cx='284' cy='228' r='15' fill='%231b1712'/%3E%3Ccircle cx='228' cy='284' r='15' fill='%231b1712'/%3E%3Ccircle cx='284' cy='284' r='15' fill='%231b1712'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%23122a3e'/%3E%3Crect x='72' y='72' width='368' height='368' rx='28' fill='%23ffffff'/%3E%3Crect x='84' y='84' width='150' height='150' rx='10' fill='%23d21f26'/%3E%3Crect x='278' y='84' width='150' height='150' rx='10' fill='%230d8f42'/%3E%3Crect x='278' y='278' width='150' height='150' rx='10' fill='%23e8a900'/%3E%3Crect x='84' y='278' width='150' height='150' rx='10' fill='%230f63c4'/%3E%3Crect x='124' y='124' width='70' height='70' fill='%23ffffff'/%3E%3Crect x='318' y='124' width='70' height='70' fill='%23ffffff'/%3E%3Crect x='318' y='318' width='70' height='70' fill='%23ffffff'/%3E%3Crect x='124' y='318' width='70' height='70' fill='%23ffffff'/%3E%3Crect x='196' y='196' width='120' height='120' rx='22' fill='%23fbf8f0' stroke='%23cfc7b4' stroke-width='6'/%3E%3Ccircle cx='228' cy='228' r='15' fill='%231b1712'/%3E%3Ccircle cx='284' cy='228' r='15' fill='%231b1712'/%3E%3Ccircle cx='228' cy='284' r='15' fill='%231b1712'/%3E%3Ccircle cx='284' cy='284' r='15' fill='%231b1712'/%3E%3C/svg%3E">
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Ludo%20Time%22%2C%22short_name%22%3A%22Ludo%20Time%22%2C%22description%22%3A%22Roll%2C%20race%20and%20rule%20the%20board.%22%2C%22start_url%22%3A%22.%22%2C%22scope%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22portrait%22%2C%22background_color%22%3A%22%230a1a26%22%2C%22theme_color%22%3A%22%23122a3e%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20512%20512%27%253E%253Crect%20width%3D%27512%27%20height%3D%27512%27%20rx%3D%2796%27%20fill%3D%27%2523122a3e%27%2F%253E%253Crect%20x%3D%2772%27%20y%3D%2772%27%20width%3D%27368%27%20height%3D%27368%27%20rx%3D%2728%27%20fill%3D%27%2523ffffff%27%2F%253E%253Crect%20x%3D%2784%27%20y%3D%2784%27%20width%3D%27150%27%20height%3D%27150%27%20rx%3D%2710%27%20fill%3D%27%2523d21f26%27%2F%253E%253Crect%20x%3D%27278%27%20y%3D%2784%27%20width%3D%27150%27%20height%3D%27150%27%20rx%3D%2710%27%20fill%3D%27%25230d8f42%27%2F%253E%253Crect%20x%3D%27278%27%20y%3D%27278%27%20width%3D%27150%27%20height%3D%27150%27%20rx%3D%2710%27%20fill%3D%27%2523e8a900%27%2F%253E%253Crect%20x%3D%2784%27%20y%3D%27278%27%20width%3D%27150%27%20height%3D%27150%27%20rx%3D%2710%27%20fill%3D%27%25230f63c4%27%2F%253E%253Crect%20x%3D%27124%27%20y%3D%27124%27%20width%3D%2770%27%20height%3D%2770%27%20fill%3D%27%2523ffffff%27%2F%253E%253Crect%20x%3D%27318%27%20y%3D%27124%27%20width%3D%2770%27%20height%3D%2770%27%20fill%3D%27%2523ffffff%27%2F%253E%253Crect%20x%3D%27318%27%20y%3D%27318%27%20width%3D%2770%27%20height%3D%2770%27%20fill%3D%27%2523ffffff%27%2F%253E%253Crect%20x%3D%27124%27%20y%3D%27318%27%20width%3D%2770%27%20height%3D%2770%27%20fill%3D%27%2523ffffff%27%2F%253E%253Crect%20x%3D%27196%27%20y%3D%27196%27%20width%3D%27120%27%20height%3D%27120%27%20rx%3D%2722%27%20fill%3D%27%2523fbf8f0%27%20stroke%3D%27%2523cfc7b4%27%20stroke-width%3D%276%27%2F%253E%253Ccircle%20cx%3D%27228%27%20cy%3D%27228%27%20r%3D%2715%27%20fill%3D%27%25231b1712%27%2F%253E%253Ccircle%20cx%3D%27284%27%20cy%3D%27228%27%20r%3D%2715%27%20fill%3D%27%25231b1712%27%2F%253E%253Ccircle%20cx%3D%27228%27%20cy%3D%27284%27%20r%3D%2715%27%20fill%3D%27%25231b1712%27%2F%253E%253Ccircle%20cx%3D%27284%27%20cy%3D%27284%27%20r%3D%2715%27%20fill%3D%27%25231b1712%27%2F%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%2C%22purpose%22%3A%22any%22%7D%2C%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20512%20512%27%253E%253Crect%20width%3D%27512%27%20height%3D%27512%27%20rx%3D%2796%27%20fill%3D%27%2523122a3e%27%2F%253E%253Crect%20x%3D%2772%27%20y%3D%2772%27%20width%3D%27368%27%20height%3D%27368%27%20rx%3D%2728%27%20fill%3D%27%2523ffffff%27%2F%253E%253Crect%20x%3D%2784%27%20y%3D%2784%27%20width%3D%27150%27%20height%3D%27150%27%20rx%3D%2710%27%20fill%3D%27%2523d21f26%27%2F%253E%253Crect%20x%3D%27278%27%20y%3D%2784%27%20width%3D%27150%27%20height%3D%27150%27%20rx%3D%2710%27%20fill%3D%27%25230d8f42%27%2F%253E%253Crect%20x%3D%27278%27%20y%3D%27278%27%20width%3D%27150%27%20height%3D%27150%27%20rx%3D%2710%27%20fill%3D%27%2523e8a900%27%2F%253E%253Crect%20x%3D%2784%27%20y%3D%27278%27%20width%3D%27150%27%20height%3D%27150%27%20rx%3D%2710%27%20fill%3D%27%25230f63c4%27%2F%253E%253Crect%20x%3D%27124%27%20y%3D%27124%27%20width%3D%2770%27%20height%3D%2770%27%20fill%3D%27%2523ffffff%27%2F%253E%253Crect%20x%3D%27318%27%20y%3D%27124%27%20width%3D%2770%27%20height%3D%2770%27%20fill%3D%27%2523ffffff%27%2F%253E%253Crect%20x%3D%27318%27%20y%3D%27318%27%20width%3D%2770%27%20height%3D%2770%27%20fill%3D%27%2523ffffff%27%2F%253E%253Crect%20x%3D%27124%27%20y%3D%27318%27%20width%3D%2770%27%20height%3D%2770%27%20fill%3D%27%2523ffffff%27%2F%253E%253Crect%20x%3D%27196%27%20y%3D%27196%27%20width%3D%27120%27%20height%3D%27120%27%20rx%3D%2722%27%20fill%3D%27%2523fbf8f0%27%20stroke%3D%27%2523cfc7b4%27%20stroke-width%3D%276%27%2F%253E%253Ccircle%20cx%3D%27228%27%20cy%3D%27228%27%20r%3D%2715%27%20fill%3D%27%25231b1712%27%2F%253E%253Ccircle%20cx%3D%27284%27%20cy%3D%27228%27%20r%3D%2715%27%20fill%3D%27%25231b1712%27%2F%253E%253Ccircle%20cx%3D%27228%27%20cy%3D%27284%27%20r%3D%2715%27%20fill%3D%27%25231b1712%27%2F%253E%253Ccircle%20cx%3D%27284%27%20cy%3D%27284%27%20r%3D%2715%27%20fill%3D%27%25231b1712%27%2F%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%2C%22purpose%22%3A%22maskable%22%7D%5D%7D">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
+
+<!-- ===== SIGN IN ===== -->
+<div class="screen active" id="auth">
+  <h1 class="logo"><span>LUDO</span><span>TIME</span></h1>
+  <p class="tag">Roll · Race · Rule the board</p>
+  <div class="dicebar"><div class="pip-mini">🎲</div><div class="pip-mini">🔴</div>
+    <div class="pip-mini">🟢</div><div class="pip-mini">🟣</div></div>
+  <div class="panel">
+    <button class="btn-auth" id="googleBtn"><span class="g">G</span><span class="lbl">Continue with Google</span></button>
+    <button class="btn-auth guest" id="guestBtn">
+      <span class="g" style="background:rgba(255,255,255,.2)">👤</span><span class="lbl">Play as guest</span></button>
+    <p class="auth-note">Sign in to keep your coins and level on every device.<br>
+      Guests can play everything — progress stays on this device.</p>
+  </div>
+</div>
+
+<!-- ===== PROFILE SETUP ===== -->
+<div class="screen" id="setup">
+  <h1 class="logo" style="font-size:clamp(32px,9vw,44px)"><span>PICK YOUR</span><span>PLAYER</span></h1>
+  <div class="panel" style="margin-top:22px">
+    <div class="field"><label class="field-label">Display name</label>
+      <input type="text" id="setupName" maxlength="12" placeholder="Enter a name"></div>
+    <div class="field"><label class="field-label">Avatar</label><div class="avagrid" id="avaGrid"></div></div>
+    <button class="btn-play" id="saveProfBtn">CONTINUE</button>
+  </div>
+</div>
+
+<!-- ===== HOME ===== -->
+<div class="screen" id="home">
+  <div class="hbar">
+    <button class="hprof" id="profChip">
+      <span class="pic" id="profPic">🦊</span>
+      <span class="who">
+        <span class="pn" id="profName">You</span>
+        <span class="lv" id="profLv">Level 1</span>
+      </span>
+    </button>
+    <div class="hcoins">🪙 <span id="profCoins">0</span></div>
+    <button class="morecoins" id="moreCoinsBtn">MORE COINS</button>
+  </div>
+
+  <div class="xpwrap"><i id="profXp" style="width:0%"></i></div>
+
+  <div class="hero-wrap">
+    <h1 class="logo" id="bigLogo"></h1>
+    <svg class='hero' viewBox='0 0 460 300' xmlns='http://www.w3.org/2000/svg'><g class='h-person h1'><path d='M83.2 148.2 L87.9 86.4 Q106.4 76.7 112.2 71.3 L123.8 71.3 Q129.6 76.7 148.1 86.4 L152.8 148.2 Z' fill='#d21f26'/><path d='M112.2 71.3 Q118.0 84.4 123.8 71.3 L123.8 69.0 L112.2 69.0 Z' fill='#d9a880'/><path d='M89.8 117.3 Q118.0 130.8 146.2 117.3 L150.1 148.2 L85.9 148.2 Z' fill='#8e1116' opacity='.28'/><rect x='111.4' y='57.4' width='13.1' height='15.8' fill='#f6d3b4'/><path d='M111.4 58.4 Q118.0 65.9 124.6 58.4 L124.6 63.2 Q118.0 69.0 111.4 63.2 Z' fill='#d9a880' opacity='.5'/><ellipse cx='98.9' cy='44.6' rx='2.9' ry='4.6' fill='#f6d3b4'/><ellipse cx='137.1' cy='44.6' rx='2.9' ry='4.6' fill='#f6d3b4'/><path d='M98.7 39.0 C98.1 14.9 137.9 14.9 137.3 39.0 C136.7 52.8 133.1 58.5 118.0 60.5 C102.9 58.5 99.3 52.8 98.7 39.0 Z' fill='#f6d3b4'/><path d='M136.9 39.0 C136.4 52.8 133.1 58.5 118.0 60.5 L121.9 58.2 C131.9 53.9 133.5 41.9 133.8 36.1 Z' fill='#d9a880' opacity='.34'/><ellipse cx='109.5' cy='44.6' rx='5.6' ry='6.6' fill='#ffffff'/><ellipse cx='109.5' cy='45.3' rx='4.7' ry='5.4' fill='#6b4326'/><ellipse cx='109.5' cy='45.4' rx='2.5' ry='3.0' fill='#191620'/><circle cx='107.5' cy='42.4' r='1.6' fill='#ffffff'/><path d='M103.1 41.4 Q109.5 36.8 115.9 41.6' stroke='#2f1d13' stroke-width='2.3' fill='none' stroke-linecap='round'/><path d='M103.6 34.8 Q109.5 33.1 115.4 35.2' stroke='#2f1d13' stroke-width='2.5' fill='none' stroke-linecap='round'/><ellipse cx='126.5' cy='44.6' rx='5.6' ry='6.6' fill='#ffffff'/><ellipse cx='126.5' cy='45.3' rx='4.7' ry='5.4' fill='#6b4326'/><ellipse cx='126.5' cy='45.4' rx='2.5' ry='3.0' fill='#191620'/><circle cx='124.5' cy='42.4' r='1.6' fill='#ffffff'/><path d='M120.1 41.4 Q126.5 36.8 132.9 41.6' stroke='#2f1d13' stroke-width='2.3' fill='none' stroke-linecap='round'/><path d='M120.6 34.8 Q126.5 33.1 132.4 35.2' stroke='#2f1d13' stroke-width='2.5' fill='none' stroke-linecap='round'/><path d='M117.0 50.8 q-1.9 2.3 1.4 2.9' stroke='#d9a880' stroke-width='1.5' fill='none' stroke-linecap='round'/><path d='M113.7 56.6 L122.3 56.6' stroke='#8f4a40' stroke-width='1.9' stroke-linecap='round'/><path d='M108.3 53.9 Q118.0 59.7 127.7 53.9' stroke='#d9a880' stroke-width='9.7' fill='none' opacity='.16' stroke-linecap='round'/><path d='M98.1 39.6 C96.9 13.0 139.1 13.0 137.9 39.6 L135.4 31.9 L123.8 27.2 L111.4 28.4 L101.0 33.0 Z' fill='#2f1d13'/><path d='M106.0 21.8 Q117.0 16.8 129.6 22.6' stroke='#5c3b26' stroke-width='2.7' fill='none' stroke-linecap='round' opacity='.5'/><path d='M109.5 17.2 L112.4 11.4 L115.3 18.0 Z' fill='#2f1d13'/><path d='M118.8 14.9 L121.7 9.1 L124.6 15.7 Z' fill='#2f1d13'/><path d='M127.7 18.0 L130.6 12.2 L133.5 18.7 Z' fill='#2f1d13'/></g><g class='h-person h2'><path d='M311.8 145.8 L316.3 85.4 Q330.7 75.9 336.3 70.6 L347.7 70.6 Q353.3 75.9 367.7 85.4 L372.2 145.8 Z' fill='#0d8f42'/><path d='M336.3 70.6 Q342.0 83.5 347.7 70.6 L347.7 68.3 L336.3 68.3 Z' fill='#b8804f'/><path d='M318.2 115.6 Q342.0 128.8 365.8 115.6 L369.6 145.8 L314.4 145.8 Z' fill='#065c28' opacity='.28'/><path d='M317.4 36.2 Q315.2 77.8 327.8 81.6 L356.2 81.6 Q368.8 77.8 366.6 36.2 Z' fill='#1b1410'/><rect x='336.9' y='57.0' width='10.2' height='15.5' fill='#e0ad82'/><path d='M335.6 58.0 Q342.0 65.3 348.4 58.0 L348.4 62.7 Q342.0 68.3 335.6 62.7 Z' fill='#b8804f' opacity='.5'/><ellipse cx='323.3' cy='44.5' rx='2.8' ry='4.5' fill='#e0ad82'/><ellipse cx='360.7' cy='44.5' rx='2.8' ry='4.5' fill='#e0ad82'/><path d='M323.1 39.1 C322.5 15.4 361.5 15.4 360.9 39.1 C360.3 52.5 350.3 60.8 342.0 62.7 C333.7 60.8 323.7 52.5 323.1 39.1 Z' fill='#e0ad82'/><path d='M360.5 39.1 C360.0 52.5 350.3 60.8 342.0 62.7 L345.8 60.4 C355.6 53.6 357.1 41.9 357.5 36.2 Z' fill='#b8804f' opacity='.34'/><ellipse cx='333.7' cy='43.8' rx='6.2' ry='8.5' fill='#ffffff'/><ellipse cx='333.7' cy='44.6' rx='5.2' ry='7.0' fill='#3f6b3a'/><ellipse cx='333.7' cy='44.8' rx='2.7' ry='3.9' fill='#191620'/><circle cx='331.4' cy='40.9' r='1.6' fill='#ffffff'/><path d='M326.6 39.5 Q333.7 31.4 340.8 39.9' stroke='#1b1410' stroke-width='2.3' fill='none' stroke-linecap='round'/><path d='M326.7 39.5 l-2.8 -2.3' stroke='#1b1410' stroke-width='1.9' stroke-linecap='round'/><path d='M327.8 32.6 Q333.7 29.7 339.6 32.9' stroke='#1b1410' stroke-width='1.6' fill='none' stroke-linecap='round'/><ellipse cx='350.3' cy='43.8' rx='6.2' ry='8.5' fill='#ffffff'/><ellipse cx='350.3' cy='44.6' rx='5.2' ry='7.0' fill='#3f6b3a'/><ellipse cx='350.3' cy='44.8' rx='2.7' ry='3.9' fill='#191620'/><circle cx='348.1' cy='40.9' r='1.6' fill='#ffffff'/><path d='M343.2 39.5 Q350.3 31.4 357.4 39.9' stroke='#1b1410' stroke-width='2.3' fill='none' stroke-linecap='round'/><path d='M357.3 39.5 l2.8 -2.3' stroke='#1b1410' stroke-width='1.9' stroke-linecap='round'/><path d='M344.4 32.6 Q350.3 29.7 356.2 32.9' stroke='#1b1410' stroke-width='1.6' fill='none' stroke-linecap='round'/><path d='M341.1 50.6 q-1.9 2.3 1.3 2.8' stroke='#b8804f' stroke-width='1.5' fill='none' stroke-linecap='round'/><path d='M338.4 55.9 Q342.0 58.9 345.6 55.9' stroke='#a8544a' stroke-width='1.6' fill='none' stroke-linecap='round'/><ellipse cx='329.5' cy='51.0' rx='3.4' ry='1.9' fill='#e8877c' opacity='.38'/><ellipse cx='354.5' cy='51.0' rx='3.4' ry='1.9' fill='#e8877c' opacity='.38'/><path d='M322.3 38.1 C321.2 13.2 362.8 13.2 361.7 38.1 L356.0 40.4 L350.7 30.2 L344.5 40.8 L337.1 29.8 L331.0 40.0 L325.7 30.5 Z' fill='#1b1410'/><path d='M330.3 22.2 Q341.1 17.3 353.3 23.0' stroke='#4a3527' stroke-width='2.6' fill='none' stroke-linecap='round' opacity='.5'/><circle cx='363.5' cy='23.4' r='5.7' fill='#1b1410'/></g><ellipse cx='230' cy='176' rx='218' ry='102' fill='#08202f' opacity='.5'/><ellipse cx='230' cy='170' rx='206' ry='93' fill='#164059' opacity='.6'/><ellipse cx='230' cy='166' rx='193' ry='84' fill='#1d5273' opacity='.5'/><polygon points='172.0,108.0 288.0,108.0 324.0,198.0 136.0,198.0' fill='#ffffff'/><polygon points='172.0,108.0 218.4,108.0 215.5,144.0 157.6,144.0' fill='#d21f26'/><polygon points='241.6,108.0 288.0,108.0 302.4,144.0 244.5,144.0' fill='#0d8f42'/><polygon points='245.9,162.0 309.6,162.0 324.0,198.0 248.8,198.0' fill='#e8a900'/><polygon points='150.4,162.0 214.1,162.0 211.2,198.0 136.0,198.0' fill='#0f63c4'/><polygon points='180.1,116.4 206.3,116.4 203.3,135.6 173.8,135.6' fill='#ffffff'/><polygon points='253.7,116.4 279.9,116.4 286.2,135.6 256.7,135.6' fill='#ffffff'/><polygon points='262.1,170.4 297.5,170.4 303.7,189.6 265.0,189.6' fill='#ffffff'/><polygon points='162.5,170.4 197.9,170.4 195.0,189.6 156.3,189.6' fill='#ffffff'/><polygon points='165.2,150.0 215.0,150.0 214.6,156.0 163.1,156.0' fill='#d21f26'/><polygon points='226.0,114.0 234.0,114.0 234.8,144.0 225.2,144.0' fill='#0d8f42'/><polygon points='245.0,150.0 294.8,150.0 296.9,156.0 245.4,156.0' fill='#e8a900'/><polygon points='224.7,162.0 235.3,162.0 236.1,192.0 223.9,192.0' fill='#0f63c4'/><line x1='157.6' y1='144.0' x2='150.4' y2='162.0' stroke='#c3ced6' stroke-width='.7'/><line x1='218.4' y1='108.0' x2='241.6' y2='108.0' stroke='#c3ced6' stroke-width='.7'/><line x1='167.3' y1='144.0' x2='161.0' y2='162.0' stroke='#c3ced6' stroke-width='.7'/><line x1='217.9' y1='114.0' x2='242.1' y2='114.0' stroke='#c3ced6' stroke-width='.7'/><line x1='176.9' y1='144.0' x2='171.6' y2='162.0' stroke='#c3ced6' stroke-width='.7'/><line x1='217.4' y1='120.0' x2='242.6' y2='120.0' stroke='#c3ced6' stroke-width='.7'/><line x1='186.6' y1='144.0' x2='182.2' y2='162.0' stroke='#c3ced6' stroke-width='.7'/><line x1='217.0' y1='126.0' x2='243.0' y2='126.0' stroke='#c3ced6' stroke-width='.7'/><line x1='196.2' y1='144.0' x2='192.9' y2='162.0' stroke='#c3ced6' stroke-width='.7'/><line x1='216.5' y1='132.0' x2='243.5' y2='132.0' stroke='#c3ced6' stroke-width='.7'/><line x1='205.9' y1='144.0' x2='203.5' y2='162.0' stroke='#c3ced6' stroke-width='.7'/><line x1='216.0' y1='138.0' x2='244.0' y2='138.0' stroke='#c3ced6' stroke-width='.7'/><line x1='218.4' y1='108.0' x2='211.2' y2='198.0' stroke='#c3ced6' stroke-width='.7'/><line x1='157.6' y1='144.0' x2='302.4' y2='144.0' stroke='#c3ced6' stroke-width='.7'/><line x1='226.1' y1='108.0' x2='223.7' y2='198.0' stroke='#c3ced6' stroke-width='.7'/><line x1='155.2' y1='150.0' x2='304.8' y2='150.0' stroke='#c3ced6' stroke-width='.7'/><line x1='233.9' y1='108.0' x2='236.3' y2='198.0' stroke='#c3ced6' stroke-width='.7'/><line x1='152.8' y1='156.0' x2='307.2' y2='156.0' stroke='#c3ced6' stroke-width='.7'/><line x1='241.6' y1='108.0' x2='248.8' y2='198.0' stroke='#c3ced6' stroke-width='.7'/><line x1='150.4' y1='162.0' x2='309.6' y2='162.0' stroke='#c3ced6' stroke-width='.7'/><line x1='254.1' y1='144.0' x2='256.5' y2='162.0' stroke='#c3ced6' stroke-width='.7'/><line x1='213.6' y1='168.0' x2='246.4' y2='168.0' stroke='#c3ced6' stroke-width='.7'/><line x1='263.8' y1='144.0' x2='267.1' y2='162.0' stroke='#c3ced6' stroke-width='.7'/><line x1='213.1' y1='174.0' x2='246.9' y2='174.0' stroke='#c3ced6' stroke-width='.7'/><line x1='273.4' y1='144.0' x2='277.8' y2='162.0' stroke='#c3ced6' stroke-width='.7'/><line x1='212.6' y1='180.0' x2='247.4' y2='180.0' stroke='#c3ced6' stroke-width='.7'/><line x1='283.1' y1='144.0' x2='288.4' y2='162.0' stroke='#c3ced6' stroke-width='.7'/><line x1='212.2' y1='186.0' x2='247.8' y2='186.0' stroke='#c3ced6' stroke-width='.7'/><line x1='292.7' y1='144.0' x2='299.0' y2='162.0' stroke='#c3ced6' stroke-width='.7'/><line x1='211.7' y1='192.0' x2='248.3' y2='192.0' stroke='#c3ced6' stroke-width='.7'/><line x1='302.4' y1='144.0' x2='309.6' y2='162.0' stroke='#c3ced6' stroke-width='.7'/><line x1='211.2' y1='198.0' x2='248.8' y2='198.0' stroke='#c3ced6' stroke-width='.7'/><polygon points='215.5,144.0 214.1,162.0 230.0,153.0' fill='#d21f26'/><polygon points='215.5,144.0 244.5,144.0 230.0,153.0' fill='#0d8f42'/><polygon points='244.5,144.0 245.9,162.0 230.0,153.0' fill='#e8a900'/><polygon points='214.1,162.0 245.9,162.0 230.0,153.0' fill='#0f63c4'/><polygon points='172.0,108.0 288.0,108.0 324.0,198.0 136.0,198.0' fill='none' stroke='#54646f' stroke-width='1.5'/><g><ellipse cx='185.3' cy='121.2' rx='2.6' ry='0.8' fill='#000' opacity='.22'/><ellipse cx='185.3' cy='120.9' rx='2.0' ry='0.7' fill='#8e1116'/><path d='M184.0 120.7 Q184.4 118.0 184.3 116.9 L186.2 116.9 Q186.1 118.0 186.5 120.7 Z' fill='#d21f26'/><circle cx='185.3' cy='115.2' r='2.9' fill='#ffffff'/><circle cx='185.3' cy='115.2' r='2.4' fill='#d21f26'/><path d='M183.1 116.6 A2.4 2.4 0 0 0 187.5 116.6' fill='none' stroke='#8e1116' stroke-width='0.8' opacity='.45'/><ellipse cx='184.4' cy='113.9' rx='1.0' ry='0.7' fill='#ffffff' opacity='.72' transform='rotate(-28 184.4 113.9)'/></g><g><ellipse cx='198.8' cy='121.2' rx='2.6' ry='0.8' fill='#000' opacity='.22'/><ellipse cx='198.8' cy='120.9' rx='2.0' ry='0.7' fill='#8e1116'/><path d='M197.5 120.7 Q197.9 118.0 197.8 116.9 L199.7 116.9 Q199.6 118.0 200.0 120.7 Z' fill='#d21f26'/><circle cx='198.8' cy='115.2' r='2.9' fill='#ffffff'/><circle cx='198.8' cy='115.2' r='2.4' fill='#d21f26'/><path d='M196.6 116.6 A2.4 2.4 0 0 0 201.0 116.6' fill='none' stroke='#8e1116' stroke-width='0.8' opacity='.45'/><ellipse cx='197.9' cy='113.9' rx='1.0' ry='0.7' fill='#ffffff' opacity='.72' transform='rotate(-28 197.9 113.9)'/></g><g><ellipse cx='182.6' cy='130.8' rx='2.8' ry='0.9' fill='#000' opacity='.22'/><ellipse cx='182.6' cy='130.5' rx='2.1' ry='0.7' fill='#8e1116'/><path d='M181.2 130.3 Q181.7 127.4 181.5 126.3 L183.6 126.3 Q183.5 127.4 183.9 130.3 Z' fill='#d21f26'/><circle cx='182.6' cy='124.5' r='3.1' fill='#ffffff'/><circle cx='182.6' cy='124.5' r='2.6' fill='#d21f26'/><path d='M180.2 125.9 A2.6 2.6 0 0 0 184.9 125.9' fill='none' stroke='#8e1116' stroke-width='0.9' opacity='.45'/><ellipse cx='181.7' cy='123.1' rx='1.0' ry='0.7' fill='#ffffff' opacity='.72' transform='rotate(-28 181.7 123.1)'/></g><g><ellipse cx='196.9' cy='130.8' rx='2.8' ry='0.9' fill='#000' opacity='.22'/><ellipse cx='196.9' cy='130.5' rx='2.1' ry='0.7' fill='#8e1116'/><path d='M195.6 130.3 Q196.0 127.4 195.9 126.3 L197.9 126.3 Q197.8 127.4 198.2 130.3 Z' fill='#d21f26'/><circle cx='196.9' cy='124.5' r='3.1' fill='#ffffff'/><circle cx='196.9' cy='124.5' r='2.6' fill='#d21f26'/><path d='M194.5 125.9 A2.6 2.6 0 0 0 199.2 125.9' fill='none' stroke='#8e1116' stroke-width='0.9' opacity='.45'/><ellipse cx='196.0' cy='123.1' rx='1.0' ry='0.7' fill='#ffffff' opacity='.72' transform='rotate(-28 196.0 123.1)'/></g><g><ellipse cx='261.2' cy='121.2' rx='2.6' ry='0.8' fill='#000' opacity='.22'/><ellipse cx='261.2' cy='120.9' rx='2.0' ry='0.7' fill='#065c28'/><path d='M260.0 120.7 Q260.4 118.0 260.3 116.9 L262.2 116.9 Q262.1 118.0 262.5 120.7 Z' fill='#0d8f42'/><circle cx='261.2' cy='115.2' r='2.9' fill='#ffffff'/><circle cx='261.2' cy='115.2' r='2.4' fill='#0d8f42'/><path d='M259.0 116.6 A2.4 2.4 0 0 0 263.4 116.6' fill='none' stroke='#065c28' stroke-width='0.8' opacity='.45'/><ellipse cx='260.4' cy='113.9' rx='1.0' ry='0.7' fill='#ffffff' opacity='.72' transform='rotate(-28 260.4 113.9)'/></g><g><ellipse cx='274.7' cy='121.2' rx='2.6' ry='0.8' fill='#000' opacity='.22'/><ellipse cx='274.7' cy='120.9' rx='2.0' ry='0.7' fill='#065c28'/><path d='M273.5 120.7 Q273.9 118.0 273.8 116.9 L275.7 116.9 Q275.6 118.0 276.0 120.7 Z' fill='#0d8f42'/><circle cx='274.7' cy='115.2' r='2.9' fill='#ffffff'/><circle cx='274.7' cy='115.2' r='2.4' fill='#0d8f42'/><path d='M272.5 116.6 A2.4 2.4 0 0 0 276.9 116.6' fill='none' stroke='#065c28' stroke-width='0.8' opacity='.45'/><ellipse cx='273.9' cy='113.9' rx='1.0' ry='0.7' fill='#ffffff' opacity='.72' transform='rotate(-28 273.9 113.9)'/></g><g><ellipse cx='263.1' cy='130.8' rx='2.8' ry='0.9' fill='#000' opacity='.22'/><ellipse cx='263.1' cy='130.5' rx='2.1' ry='0.7' fill='#065c28'/><path d='M261.8 130.3 Q262.2 127.4 262.1 126.3 L264.1 126.3 Q264.0 127.4 264.4 130.3 Z' fill='#0d8f42'/><circle cx='263.1' cy='124.5' r='3.1' fill='#ffffff'/><circle cx='263.1' cy='124.5' r='2.6' fill='#0d8f42'/><path d='M260.8 125.9 A2.6 2.6 0 0 0 265.5 125.9' fill='none' stroke='#065c28' stroke-width='0.9' opacity='.45'/><ellipse cx='262.2' cy='123.1' rx='1.0' ry='0.7' fill='#ffffff' opacity='.72' transform='rotate(-28 262.2 123.1)'/></g><g><ellipse cx='277.4' cy='130.8' rx='2.8' ry='0.9' fill='#000' opacity='.22'/><ellipse cx='277.4' cy='130.5' rx='2.1' ry='0.7' fill='#065c28'/><path d='M276.1 130.3 Q276.5 127.4 276.4 126.3 L278.5 126.3 Q278.3 127.4 278.8 130.3 Z' fill='#0d8f42'/><circle cx='277.4' cy='124.5' r='3.1' fill='#ffffff'/><circle cx='277.4' cy='124.5' r='2.6' fill='#0d8f42'/><path d='M275.1 125.9 A2.6 2.6 0 0 0 279.8 125.9' fill='none' stroke='#065c28' stroke-width='0.9' opacity='.45'/><ellipse cx='276.5' cy='123.1' rx='1.0' ry='0.7' fill='#ffffff' opacity='.72' transform='rotate(-28 276.5 123.1)'/></g><g><ellipse cx='271.9' cy='175.2' rx='3.5' ry='1.1' fill='#000' opacity='.22'/><ellipse cx='271.9' cy='174.8' rx='2.7' ry='0.9' fill='#9c6d00'/><path d='M270.2 174.6 Q270.7 170.9 270.6 169.4 L273.2 169.4 Q273.0 170.9 273.5 174.6 Z' fill='#e8a900'/><circle cx='271.9' cy='167.2' r='4.0' fill='#ffffff'/><circle cx='271.9' cy='167.2' r='3.3' fill='#e8a900'/><path d='M268.9 169.0 A3.3 3.3 0 0 0 274.8 169.0' fill='none' stroke='#9c6d00' stroke-width='1.1' opacity='.45'/><ellipse cx='270.7' cy='165.4' rx='1.3' ry='0.9' fill='#ffffff' opacity='.72' transform='rotate(-28 270.7 165.4)'/></g><g><ellipse cx='290.0' cy='175.2' rx='3.5' ry='1.1' fill='#000' opacity='.22'/><ellipse cx='290.0' cy='174.8' rx='2.7' ry='0.9' fill='#9c6d00'/><path d='M288.3 174.6 Q288.8 170.9 288.7 169.4 L291.3 169.4 Q291.1 170.9 291.7 174.6 Z' fill='#e8a900'/><circle cx='290.0' cy='167.2' r='4.0' fill='#ffffff'/><circle cx='290.0' cy='167.2' r='3.3' fill='#e8a900'/><path d='M287.0 169.0 A3.3 3.3 0 0 0 293.0 169.0' fill='none' stroke='#9c6d00' stroke-width='1.1' opacity='.45'/><ellipse cx='288.8' cy='165.4' rx='1.3' ry='0.9' fill='#ffffff' opacity='.72' transform='rotate(-28 288.8 165.4)'/></g><g><ellipse cx='273.8' cy='184.8' rx='3.7' ry='1.2' fill='#000' opacity='.22'/><ellipse cx='273.8' cy='184.4' rx='2.8' ry='1.0' fill='#9c6d00'/><path d='M272.0 184.2 Q272.6 180.3 272.4 178.8 L275.1 178.8 Q275.0 180.3 275.5 184.2 Z' fill='#e8a900'/><circle cx='273.8' cy='176.4' r='4.1' fill='#ffffff'/><circle cx='273.8' cy='176.4' r='3.4' fill='#e8a900'/><path d='M270.7 178.3 A3.4 3.4 0 0 0 276.9 178.3' fill='none' stroke='#9c6d00' stroke-width='1.2' opacity='.45'/><ellipse cx='272.6' cy='174.6' rx='1.4' ry='1.0' fill='#ffffff' opacity='.72' transform='rotate(-28 272.6 174.6)'/></g><g><ellipse cx='292.7' cy='184.8' rx='3.7' ry='1.2' fill='#000' opacity='.22'/><ellipse cx='292.7' cy='184.4' rx='2.8' ry='1.0' fill='#9c6d00'/><path d='M290.9 184.2 Q291.5 180.3 291.3 178.8 L294.0 178.8 Q293.9 180.3 294.4 184.2 Z' fill='#e8a900'/><circle cx='292.7' cy='176.4' r='4.1' fill='#ffffff'/><circle cx='292.7' cy='176.4' r='3.4' fill='#e8a900'/><path d='M289.6 178.3 A3.4 3.4 0 0 0 295.8 178.3' fill='none' stroke='#9c6d00' stroke-width='1.2' opacity='.45'/><ellipse cx='291.5' cy='174.6' rx='1.4' ry='1.0' fill='#ffffff' opacity='.72' transform='rotate(-28 291.5 174.6)'/></g><g><ellipse cx='170.0' cy='175.2' rx='3.5' ry='1.1' fill='#000' opacity='.22'/><ellipse cx='170.0' cy='174.8' rx='2.7' ry='0.9' fill='#093c7d'/><path d='M168.3 174.6 Q168.9 170.9 168.7 169.4 L171.3 169.4 Q171.2 170.9 171.7 174.6 Z' fill='#0f63c4'/><circle cx='170.0' cy='167.2' r='4.0' fill='#ffffff'/><circle cx='170.0' cy='167.2' r='3.3' fill='#0f63c4'/><path d='M167.0 169.0 A3.3 3.3 0 0 0 173.0 169.0' fill='none' stroke='#093c7d' stroke-width='1.1' opacity='.45'/><ellipse cx='168.9' cy='165.4' rx='1.3' ry='0.9' fill='#ffffff' opacity='.72' transform='rotate(-28 168.9 165.4)'/></g><g><ellipse cx='188.1' cy='175.2' rx='3.5' ry='1.1' fill='#000' opacity='.22'/><ellipse cx='188.1' cy='174.8' rx='2.7' ry='0.9' fill='#093c7d'/><path d='M186.5 174.6 Q187.0 170.9 186.8 169.4 L189.4 169.4 Q189.3 170.9 189.8 174.6 Z' fill='#0f63c4'/><circle cx='188.1' cy='167.2' r='4.0' fill='#ffffff'/><circle cx='188.1' cy='167.2' r='3.3' fill='#0f63c4'/><path d='M185.2 169.0 A3.3 3.3 0 0 0 191.1 169.0' fill='none' stroke='#093c7d' stroke-width='1.1' opacity='.45'/><ellipse cx='187.0' cy='165.4' rx='1.3' ry='0.9' fill='#ffffff' opacity='.72' transform='rotate(-28 187.0 165.4)'/></g><g><ellipse cx='167.3' cy='184.8' rx='3.7' ry='1.2' fill='#000' opacity='.22'/><ellipse cx='167.3' cy='184.4' rx='2.8' ry='1.0' fill='#093c7d'/><path d='M165.6 184.2 Q166.1 180.3 166.0 178.8 L168.7 178.8 Q168.5 180.3 169.1 184.2 Z' fill='#0f63c4'/><circle cx='167.3' cy='176.4' r='4.1' fill='#ffffff'/><circle cx='167.3' cy='176.4' r='3.4' fill='#0f63c4'/><path d='M164.2 178.3 A3.4 3.4 0 0 0 170.4 178.3' fill='none' stroke='#093c7d' stroke-width='1.2' opacity='.45'/><ellipse cx='166.1' cy='174.6' rx='1.4' ry='1.0' fill='#ffffff' opacity='.72' transform='rotate(-28 166.1 174.6)'/></g><g><ellipse cx='186.2' cy='184.8' rx='3.7' ry='1.2' fill='#000' opacity='.22'/><ellipse cx='186.2' cy='184.4' rx='2.8' ry='1.0' fill='#093c7d'/><path d='M184.5 184.2 Q185.0 180.3 184.9 178.8 L187.6 178.8 Q187.4 180.3 188.0 184.2 Z' fill='#0f63c4'/><circle cx='186.2' cy='176.4' r='4.1' fill='#ffffff'/><circle cx='186.2' cy='176.4' r='3.4' fill='#0f63c4'/><path d='M183.1 178.3 A3.4 3.4 0 0 0 189.3 178.3' fill='none' stroke='#093c7d' stroke-width='1.2' opacity='.45'/><ellipse cx='185.0' cy='174.6' rx='1.4' ry='1.0' fill='#ffffff' opacity='.72' transform='rotate(-28 185.0 174.6)'/></g><g class='h-die'><ellipse cx='224.5' cy='172.8' rx='8.5' ry='3.2' fill='#000' opacity='.25'/><polygon points='217.5,176.4 231.1,176.4 231.1,166.4 217.5,166.4' fill='#cbc4b4'/><polygon points='231.1,169.2 231.1,176.4 231.1,166.4 231.1,159.2' fill='#b5ae9e'/><polygon points='217.9,159.2 231.1,159.2 231.1,166.4 217.5,166.4' fill='#fcfaf4' stroke='#d9d3c4' stroke-width='.6'/><circle cx='221.4' cy='161.1' r='1.4' fill='#2b2621'/><circle cx='227.5' cy='161.1' r='1.4' fill='#2b2621'/><circle cx='221.2' cy='164.5' r='1.4' fill='#2b2621'/><circle cx='227.5' cy='164.5' r='1.4' fill='#2b2621'/><circle cx='224.4' cy='162.8' r='1.4' fill='#2b2621'/></g><line x1='89.8' y1='88.3' x2='120.9' y2='116.2' stroke='#d21f26' stroke-width='12.0' stroke-linecap='round'/><circle cx='89.8' cy='88.3' r='6.2' fill='#d21f26'/><line x1='119.4' y1='115.9' x2='120.9' y2='116.2' stroke='#8e1116' stroke-width='12.0' stroke-linecap='butt' opacity='.55'/><line x1='120.9' y1='116.2' x2='172.8' y2='123.5' stroke='#f6d3b4' stroke-width='8.5' stroke-linecap='round'/><ellipse cx='176.0' cy='124.0' rx='5.3' ry='4.3' fill='#f6d3b4' transform='rotate(8.1 176.0 124.0)'/><line x1='177.6' y1='123.5' x2='181.9' y2='122.3' stroke='#d9a880' stroke-width='.9' stroke-linecap='round' opacity='.6'/><line x1='177.7' y1='124.2' x2='182.1' y2='124.9' stroke='#d9a880' stroke-width='.9' stroke-linecap='round' opacity='.6'/><line x1='177.4' y1='124.9' x2='181.2' y2='127.3' stroke='#d9a880' stroke-width='.9' stroke-linecap='round' opacity='.6'/><line x1='146.2' y1='88.3' x2='186.1' y2='112.2' stroke='#d21f26' stroke-width='12.0' stroke-linecap='round'/><circle cx='146.2' cy='88.3' r='6.2' fill='#d21f26'/><line x1='184.6' y1='111.9' x2='186.1' y2='112.2' stroke='#8e1116' stroke-width='12.0' stroke-linecap='butt' opacity='.55'/><line x1='186.1' y1='112.2' x2='202.9' y2='115.4' stroke='#f6d3b4' stroke-width='8.5' stroke-linecap='round'/><ellipse cx='206.0' cy='116.0' rx='5.3' ry='4.3' fill='#f6d3b4' transform='rotate(11.0 206.0 116.0)'/><line x1='207.7' y1='115.6' x2='212.0' y2='114.6' stroke='#d9a880' stroke-width='.9' stroke-linecap='round' opacity='.6'/><line x1='207.7' y1='116.3' x2='212.0' y2='117.2' stroke='#d9a880' stroke-width='.9' stroke-linecap='round' opacity='.6'/><line x1='207.4' y1='117.0' x2='211.0' y2='119.5' stroke='#d9a880' stroke-width='.9' stroke-linecap='round' opacity='.6'/><line x1='318.2' y1='87.2' x2='276.1' y2='111.6' stroke='#0d8f42' stroke-width='11.7' stroke-linecap='round'/><circle cx='318.2' cy='87.2' r='6.1' fill='#0d8f42'/><line x1='277.6' y1='111.3' x2='276.1' y2='111.6' stroke='#065c28' stroke-width='11.7' stroke-linecap='butt' opacity='.55'/><line x1='276.1' y1='111.6' x2='257.1' y2='115.4' stroke='#e0ad82' stroke-width='8.3' stroke-linecap='round'/><ellipse cx='254.0' cy='116.0' rx='5.2' ry='4.2' fill='#e0ad82' transform='rotate(168.8 254.0 116.0)'/><line x1='252.6' y1='117.0' x2='249.1' y2='119.5' stroke='#b8804f' stroke-width='.9' stroke-linecap='round' opacity='.6'/><line x1='252.4' y1='116.3' x2='248.1' y2='117.2' stroke='#b8804f' stroke-width='.9' stroke-linecap='round' opacity='.6'/><line x1='252.4' y1='115.6' x2='248.2' y2='114.7' stroke='#b8804f' stroke-width='.9' stroke-linecap='round' opacity='.6'/><line x1='365.8' y1='87.2' x2='336.9' y2='115.6' stroke='#0d8f42' stroke-width='11.7' stroke-linecap='round'/><circle cx='365.8' cy='87.2' r='6.1' fill='#0d8f42'/><line x1='338.4' y1='115.4' x2='336.9' y2='115.6' stroke='#065c28' stroke-width='11.7' stroke-linecap='butt' opacity='.55'/><line x1='336.9' y1='115.6' x2='287.2' y2='123.5' stroke='#e0ad82' stroke-width='8.3' stroke-linecap='round'/><ellipse cx='284.0' cy='124.0' rx='5.2' ry='4.2' fill='#e0ad82' transform='rotate(171.0 284.0 124.0)'/><line x1='282.6' y1='124.9' x2='279.0' y2='127.3' stroke='#b8804f' stroke-width='.9' stroke-linecap='round' opacity='.6'/><line x1='282.4' y1='124.3' x2='278.1' y2='124.9' stroke='#b8804f' stroke-width='.9' stroke-linecap='round' opacity='.6'/><line x1='282.4' y1='123.6' x2='278.2' y2='122.4' stroke='#b8804f' stroke-width='.9' stroke-linecap='round' opacity='.6'/><g class='h-person h3'><path d='M56.7 290.3 L61.9 220.4 Q82.9 209.5 89.4 203.4 L102.6 203.4 Q109.1 209.5 130.1 220.4 L135.3 290.3 Z' fill='#0f63c4'/><path d='M89.4 203.4 Q96.0 218.2 102.6 203.4 L102.6 200.8 L89.4 200.8 Z' fill='#a06a40'/><path d='M64.1 255.4 Q96.0 270.6 127.9 255.4 L132.3 290.3 L59.7 290.3 Z' fill='#093c7d' opacity='.28'/><rect x='88.6' y='187.7' width='14.9' height='17.9' fill='#c98f62'/><path d='M88.6 188.7 Q96.0 197.3 103.4 188.7 L103.4 194.2 Q96.0 200.8 88.6 194.2 Z' fill='#a06a40' opacity='.5'/><ellipse cx='74.4' cy='173.2' rx='3.3' ry='5.2' fill='#c98f62'/><ellipse cx='117.6' cy='173.2' rx='3.3' ry='5.2' fill='#c98f62'/><path d='M74.2 166.9 C73.5 139.6 118.5 139.6 117.8 166.9 C117.2 182.4 113.0 189.0 96.0 191.2 C79.0 189.0 74.8 182.4 74.2 166.9 Z' fill='#c98f62'/><path d='M117.4 166.9 C116.7 182.4 113.0 189.0 96.0 191.2 L100.4 188.5 C111.7 183.7 113.5 170.2 113.9 163.6 Z' fill='#a06a40' opacity='.34'/><ellipse cx='86.4' cy='173.2' rx='6.3' ry='7.4' fill='#ffffff'/><ellipse cx='86.4' cy='174.0' rx='5.3' ry='6.1' fill='#3d3a52'/><ellipse cx='86.4' cy='174.1' rx='2.8' ry='3.4' fill='#191620'/><circle cx='84.1' cy='170.7' r='1.9' fill='#ffffff'/><path d='M79.2 169.5 Q86.4 164.3 93.6 169.8' stroke='#191512' stroke-width='2.6' fill='none' stroke-linecap='round'/><path d='M79.7 162.1 Q86.4 160.2 93.0 162.5' stroke='#191512' stroke-width='2.8' fill='none' stroke-linecap='round'/><ellipse cx='105.6' cy='173.2' rx='6.3' ry='7.4' fill='#ffffff'/><ellipse cx='105.6' cy='174.0' rx='5.3' ry='6.1' fill='#3d3a52'/><ellipse cx='105.6' cy='174.1' rx='2.8' ry='3.4' fill='#191620'/><circle cx='103.3' cy='170.7' r='1.9' fill='#ffffff'/><path d='M98.4 169.5 Q105.6 164.3 112.8 169.8' stroke='#191512' stroke-width='2.6' fill='none' stroke-linecap='round'/><path d='M99.0 162.1 Q105.6 160.2 112.3 162.5' stroke='#191512' stroke-width='2.8' fill='none' stroke-linecap='round'/><path d='M94.9 180.2 q-2.2 2.6 1.5 3.3' stroke='#a06a40' stroke-width='1.7' fill='none' stroke-linecap='round'/><path d='M91.2 186.8 L100.8 186.8' stroke='#8f4a40' stroke-width='2.2' stroke-linecap='round'/><path d='M85.1 183.7 Q96.0 190.3 106.9 183.7' stroke='#a06a40' stroke-width='10.9' fill='none' opacity='.16' stroke-linecap='round'/><path d='M73.5 167.6 C72.2 137.4 119.8 137.4 118.5 167.6 L115.7 158.8 L102.6 153.6 L88.6 154.9 L76.8 160.1 Z' fill='#191512'/><path d='M82.5 147.5 Q94.9 141.8 109.1 148.3' stroke='#40342a' stroke-width='3.1' fill='none' stroke-linecap='round' opacity='.5'/></g><g class='h-person h4'><path d='M329.7 288.0 L334.9 219.4 Q351.1 208.7 357.6 202.7 L370.4 202.7 Q376.9 208.7 393.1 219.4 L398.3 288.0 Z' fill='#e8a900'/><path d='M357.6 202.7 Q364.0 217.3 370.4 202.7 L370.4 200.1 L357.6 200.1 Z' fill='#d29f74'/><path d='M337.0 253.7 Q364.0 268.7 391.0 253.7 L395.3 288.0 L332.7 288.0 Z' fill='#9c6d00' opacity='.28'/><path d='M336.2 163.7 Q333.6 210.8 347.9 215.1 L380.1 215.1 Q394.4 210.8 391.8 163.7 Z' fill='#191512'/><rect x='358.2' y='187.3' width='11.6' height='17.6' fill='#f2c49f'/><path d='M356.7 188.3 Q364.0 196.7 371.3 188.3 L371.3 193.7 Q364.0 200.1 356.7 193.7 Z' fill='#d29f74' opacity='.5'/><ellipse cx='342.8' cy='173.1' rx='3.2' ry='5.1' fill='#f2c49f'/><ellipse cx='385.2' cy='173.1' rx='3.2' ry='5.1' fill='#f2c49f'/><path d='M342.6 166.9 C341.9 140.2 386.1 140.2 385.4 166.9 C384.8 182.1 373.4 191.6 364.0 193.7 C354.6 191.6 343.2 182.1 342.6 166.9 Z' fill='#f2c49f'/><path d='M385.0 166.9 C384.3 182.1 373.4 191.6 364.0 193.7 L368.3 191.1 C379.4 183.4 381.1 170.1 381.6 163.7 Z' fill='#d29f74' opacity='.34'/><ellipse cx='354.6' cy='172.3' rx='7.1' ry='9.6' fill='#ffffff'/><ellipse cx='354.6' cy='173.2' rx='5.9' ry='7.9' fill='#2f5c86'/><ellipse cx='354.6' cy='173.4' rx='3.1' ry='4.4' fill='#191620'/><circle cx='352.0' cy='169.0' r='1.8' fill='#ffffff'/><path d='M346.5 167.5 Q354.6 158.3 362.6 167.9' stroke='#191512' stroke-width='2.6' fill='none' stroke-linecap='round'/><path d='M346.7 167.5 l-3.2 -2.6' stroke='#191512' stroke-width='2.1' stroke-linecap='round'/><path d='M347.9 159.6 Q354.6 156.3 361.3 159.9' stroke='#191512' stroke-width='1.8' fill='none' stroke-linecap='round'/><ellipse cx='373.4' cy='172.3' rx='7.1' ry='9.6' fill='#ffffff'/><ellipse cx='373.4' cy='173.2' rx='5.9' ry='7.9' fill='#2f5c86'/><ellipse cx='373.4' cy='173.4' rx='3.1' ry='4.4' fill='#191620'/><circle cx='370.9' cy='169.0' r='1.8' fill='#ffffff'/><path d='M365.4 167.5 Q373.4 158.3 381.5 167.9' stroke='#191512' stroke-width='2.6' fill='none' stroke-linecap='round'/><path d='M381.3 167.5 l3.2 -2.6' stroke='#191512' stroke-width='2.1' stroke-linecap='round'/><path d='M366.7 159.6 Q373.4 156.3 380.1 159.9' stroke='#191512' stroke-width='1.8' fill='none' stroke-linecap='round'/><path d='M362.9 180.0 q-2.1 2.6 1.5 3.2' stroke='#d29f74' stroke-width='1.7' fill='none' stroke-linecap='round'/><path d='M359.9 186.0 Q364.0 189.4 368.1 186.0' stroke='#a8544a' stroke-width='1.8' fill='none' stroke-linecap='round'/><ellipse cx='349.9' cy='180.4' rx='3.9' ry='2.1' fill='#e8877c' opacity='.38'/><ellipse cx='378.1' cy='180.4' rx='3.9' ry='2.1' fill='#e8877c' opacity='.38'/><path d='M341.7 165.9 C340.4 137.6 387.6 137.6 386.3 165.9 L379.9 168.4 L373.9 156.9 L366.8 168.9 L358.4 156.4 L351.6 168.0 L345.6 157.3 Z' fill='#191512'/><path d='M350.7 147.9 Q362.9 142.3 376.9 148.7' stroke='#463a2c' stroke-width='3.0' fill='none' stroke-linecap='round' opacity='.5'/></g><line x1='64.1' y1='222.6' x2='106.1' y2='183.3' stroke='#0f63c4' stroke-width='13.5' stroke-linecap='round'/><circle cx='64.1' cy='222.6' r='7.0' fill='#0f63c4'/><line x1='104.6' y1='183.5' x2='106.1' y2='183.3' stroke='#093c7d' stroke-width='13.5' stroke-linecap='butt' opacity='.55'/><line x1='106.1' y1='183.3' x2='152.8' y2='176.5' stroke='#c98f62' stroke-width='9.6' stroke-linecap='round'/><ellipse cx='156.0' cy='176.0' rx='6.0' ry='4.8' fill='#c98f62' transform='rotate(-8.3 156.0 176.0)'/><line x1='157.6' y1='175.0' x2='161.8' y2='172.3' stroke='#a06a40' stroke-width='.9' stroke-linecap='round' opacity='.6'/><line x1='157.9' y1='175.7' x2='162.8' y2='175.0' stroke='#a06a40' stroke-width='.9' stroke-linecap='round' opacity='.6'/><line x1='157.8' y1='176.5' x2='162.7' y2='177.9' stroke='#a06a40' stroke-width='.9' stroke-linecap='round' opacity='.6'/><line x1='127.9' y1='222.6' x2='161.9' y2='192.3' stroke='#0f63c4' stroke-width='13.5' stroke-linecap='round'/><circle cx='127.9' cy='222.6' r='7.0' fill='#0f63c4'/><line x1='160.5' y1='192.5' x2='161.9' y2='192.3' stroke='#093c7d' stroke-width='13.5' stroke-linecap='butt' opacity='.55'/><line x1='161.9' y1='192.3' x2='180.8' y2='190.3' stroke='#c98f62' stroke-width='9.6' stroke-linecap='round'/><ellipse cx='184.0' cy='190.0' rx='6.0' ry='4.8' fill='#c98f62' transform='rotate(-6.0 184.0 190.0)'/><line x1='185.7' y1='189.0' x2='190.0' y2='186.5' stroke='#a06a40' stroke-width='.9' stroke-linecap='round' opacity='.6'/><line x1='185.9' y1='189.8' x2='190.9' y2='189.3' stroke='#a06a40' stroke-width='.9' stroke-linecap='round' opacity='.6'/><line x1='185.8' y1='190.6' x2='190.6' y2='192.2' stroke='#a06a40' stroke-width='.9' stroke-linecap='round' opacity='.6'/><line x1='337.0' y1='221.6' x2='300.5' y2='191.8' stroke='#e8a900' stroke-width='13.3' stroke-linecap='round'/><circle cx='337.0' cy='221.6' r='6.9' fill='#e8a900'/><line x1='302.0' y1='191.9' x2='300.5' y2='191.8' stroke='#9c6d00' stroke-width='13.3' stroke-linecap='butt' opacity='.55'/><line x1='300.5' y1='191.8' x2='279.2' y2='190.2' stroke='#f2c49f' stroke-width='9.4' stroke-linecap='round'/><ellipse cx='276.0' cy='190.0' rx='5.8' ry='4.7' fill='#f2c49f' transform='rotate(-175.9 276.0 190.0)'/><line x1='274.2' y1='190.6' x2='269.6' y2='192.3' stroke='#d29f74' stroke-width='.9' stroke-linecap='round' opacity='.6'/><line x1='274.1' y1='189.9' x2='269.2' y2='189.5' stroke='#d29f74' stroke-width='.9' stroke-linecap='round' opacity='.6'/><line x1='274.3' y1='189.1' x2='270.0' y2='186.8' stroke='#d29f74' stroke-width='.9' stroke-linecap='round' opacity='.6'/><line x1='391.0' y1='221.6' x2='351.5' y2='182.8' stroke='#e8a900' stroke-width='13.3' stroke-linecap='round'/><circle cx='391.0' cy='221.6' r='6.9' fill='#e8a900'/><line x1='353.0' y1='183.0' x2='351.5' y2='182.8' stroke='#9c6d00' stroke-width='13.3' stroke-linecap='butt' opacity='.55'/><line x1='351.5' y1='182.8' x2='307.2' y2='176.5' stroke='#f2c49f' stroke-width='9.4' stroke-linecap='round'/><ellipse cx='304.0' cy='176.0' rx='5.8' ry='4.7' fill='#f2c49f' transform='rotate(-171.9 304.0 176.0)'/><line x1='302.2' y1='176.5' x2='297.5' y2='177.9' stroke='#d29f74' stroke-width='.9' stroke-linecap='round' opacity='.6'/><line x1='302.1' y1='175.7' x2='297.3' y2='175.0' stroke='#d29f74' stroke-width='.9' stroke-linecap='round' opacity='.6'/><line x1='302.4' y1='175.0' x2='298.3' y2='172.4' stroke='#d29f74' stroke-width='.9' stroke-linecap='round' opacity='.6'/></svg>
+  </div>
+
+  <button class="big-btn online" id="onlineBtn">
+    <span class="bi">🌐</span>
+    <span class="bt">PLAY ONLINE<br><small>with friends, live</small></span>
+  </button>
+
+  <button class="big-btn cpu" id="cpuBtn">
+    <span class="bi">🤖</span>
+    <span class="bt">VS<br>COMPUTER</span>
+  </button>
+
+  <button class="big-btn pass" id="passBtn">
+    <span class="bi">👥</span>
+    <span class="bt">PASS &amp; PLAY<br><small>same device</small></span>
+  </button>
+
+  <div class="tray">
+    <button class="tray-btn" id="shopBtn">🎨<span>Themes</span></button>
+    <button class="tray-btn" id="musicBtn">🎵<span>Music</span></button>
+    <button class="tray-btn" id="howBtn">❔<span>Rules</span></button>
+    <button class="tray-btn" id="editProfBtn">✏️<span>Profile</span></button>
+    <button class="tray-btn" id="fsBtn2"><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.4' stroke-linecap='round'><path d='M3 9V4h5'/><path d='M21 9V4h-5'/><path d='M3 15v5h5'/><path d='M21 15v5h-5'/></svg><span>Full</span></button>
+  </div>
+  <div class="linkline">
+    <button id="linkGoogleBtn">Link Google account</button>
+    <button id="signOutBtn">Sign out</button>
+  </div>
+</div>
+
+<!-- ===== MATCH SETUP ===== -->
+<div class="screen" id="match">
+  <h1 class="logo" style="font-size:clamp(28px,8vw,38px)"><span id="matchTitle">VS COMPUTER</span></h1>
+  <div class="panel" style="margin-top:18px">
+    <div class="field">
+      <label class="field-label">Table size</label>
+      <div class="seg" id="segCount">
+        <button data-v="2">2</button><button data-v="3">3</button>
+        <button data-v="4" class="on">4</button><button data-v="6">6</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label">Match length</label>
+      <div class="seg" id="segLen">
+        <button data-v="quick">Quick · 2 tokens</button>
+        <button data-v="full" class="on">Full game</button>
+      </div>
+    </div>
+    <div class="hintline" id="modeHint"></div>
+    <button class="btn-play" id="playBtn">START GAME</button>
+    <button class="btn-ghost" id="backHomeBtn">Back</button>
+  </div>
+</div>
+
+
+<!-- ===== ONLINE LOBBY ===== -->
+<div class="screen" id="online">
+  <h1 class="logo" style="font-size:clamp(26px,7.5vw,38px)"><span>PLAY ONLINE</span></h1>
+  <div class="panel" style="margin-top:16px">
+    <div id="netPick">
+      <button class="big-btn cpu" id="hostBtn" style="margin-bottom:9px">
+        <span class="bi">\U0001F3E0</span><span class="bt">CREATE ROOM<br><small>you invite the others</small></span>
+      </button>
+      <button class="big-btn online" id="joinPickBtn">
+        <span class="bi">\U0001F511</span><span class="bt">JOIN A ROOM<br><small>enter a friend's code</small></span>
+      </button>
+    </div>
+
+    <div id="netJoin" style="display:none">
+      <div class="field">
+        <label class="field-label">Room code</label>
+        <input type="text" id="codeIn" maxlength="4" placeholder="ABCD"
+               style="text-transform:uppercase;letter-spacing:.3em;text-align:center;font-size:24px">
+      </div>
+      <button class="btn-play" id="joinGoBtn">JOIN</button>
+    </div>
+
+    <div id="netRoom" style="display:none">
+      <div class="field">
+        <label class="field-label">Room code — share this</label>
+        <div class="roomcode"><span id="roomCode">—</span>
+          <button class="copybtn" id="copyCodeBtn">Copy</button></div>
+      </div>
+      <div class="field">
+        <label class="field-label">Players</label>
+        <div id="netList" class="netlist"></div>
+      </div>
+      <div class="field" id="lenWrap">
+        <label class="field-label">Match length</label>
+        <div class="seg" id="segLenNet">
+          <button data-v="quick">Quick · 2 tokens</button>
+          <button data-v="full" class="on">Full game</button>
+        </div>
+      </div>
+      <button class="btn-play" id="netStartBtn">START MATCH</button>
+    </div>
+
+    <div class="hintline" id="netMsg" style="margin-top:12px"></div>
+    <button class="btn-ghost" id="netBackBtn">Back</button>
+  </div>
+</div>
+
+<!-- ===== GAME ===== -->
+<div class="screen" id="game">
+  <div class="topbar">
+    <div class="brand-sm">LUDO TIME</div>
+    <div class="icons">
+      <button class="icon-btn fsbtn" id="fsBtn" title="Fullscreen"><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.4' stroke-linecap='round'><path d='M3 9V4h5'/><path d='M21 9V4h-5'/><path d='M3 15v5h5'/><path d='M21 15v5h-5'/></svg></button>
+      <button class="icon-btn" id="tiltBtn" title="Toggle 3D view">🎛</button>
+      <button class="icon-btn" id="musicBtn2" title="Music">🎵</button>
+      <button class="icon-btn" id="soundBtn" title="Sound effects">🔊</button>
+      <button class="icon-btn" id="rulesBtn" title="Rules">❔</button>
+      <button class="icon-btn" id="quitBtn" title="Quit">✕</button>
+    </div>
+  </div>
+  <div class="players" id="players"></div>
+  <div class="board-stage"><div class="board" id="board"></div></div>
+  <div class="dockrow">
+    <div class="dice-stage"><div class="dshadow"></div><div class="dice" id="dice"></div></div>
+    <div class="turn-txt">
+      <div class="turn-who" id="turnWho">Your turn</div>
+      <div class="turn-hint" id="turnHint">Tap ROLL</div>
+    </div>
+    <button class="roll-btn" id="rollBtn">ROLL</button>
+  </div>
+</div>
+
+<!-- ===== MODALS ===== -->
+<div class="overlay" id="howModal"><div class="modal">
+  <h2>How to play</h2>
+  <ul class="rules">
+    <li><b>1</b><span>Every player starts with their tokens in their yard. First to bring them all to the centre wins.</span></li>
+    <li><b>6</b><span>Roll a 6 to move a token out of the yard onto its starting square.</span></li>
+    <li><b>↻</b><span>A 6 earns another roll. Three sixes in a row and the turn passes on.</span></li>
+    <li><b>✕</b><span>Land on an opponent and it goes back to their yard — that earns another roll too.</span></li>
+    <li><b>★</b><span>Starred squares are safe. Tokens resting there cannot be sent back.</span></li>
+    <li><b>▶</b><span>After a full lap a token turns into its own coloured lane toward the centre.</span></li>
+    <li><b>🏠</b><span>The last step must be exact. Reaching the centre earns another roll.</span></li>
+    <li><b>⬛</b><span>Two of your own tokens on one square form a wall — opponents cannot pass it.</span></li>
+    <li><b>⬢</b><span>Six-player games use the hexagonal board: longer lap, so 3 tokens each.</span></li>
+    <li><b>⚡</b><span>Quick match gives everyone 2 tokens for a much shorter game.</span></li>
+  </ul>
+  <button class="btn-play" data-close>Got it</button>
+</div></div>
+
+<div class="overlay" id="shopModal"><div class="modal">
+  <h2>Board themes</h2>
+  <div class="coinbar">
+    <div class="bal">🪙 <span id="shopCoins">0</span></div>
+    <button class="adbtn" id="adCoinsBtn">Watch ad · +100</button>
+  </div>
+  <div class="shopgrid" id="shopGrid"></div>
+  <button class="btn-play" data-close>Done</button>
+</div></div>
+
+<div class="overlay" id="musicModal"><div class="modal">
+  <h2>Music &amp; sound</h2>
+  <div class="field">
+    <label class="field-label">Music style</label>
+    <div class="seg" id="segMusic">
+      <button data-v="off">Off</button>
+      <button data-v="mellow">Mellow</button>
+      <button data-v="phonk">Phonk</button>
+      <button data-v="bhangra">Bhangra</button>
+    </div>
+  </div>
+  <div class="hintline" id="musicHint">Original loops generated in the app — nothing streamed.</div>
+  <div class="field">
+    <label class="field-label">Music volume</label>
+    <input class="vol" type="range" id="volRange" min="0" max="100" value="70">
+  </div>
+  <div class="field">
+    <label class="field-label">Sound effects</label>
+    <div class="seg" id="segSfx">
+      <button data-v="on" class="on">On</button>
+      <button data-v="off">Off</button>
+    </div>
+  </div>
+  <button class="btn-play" data-close>Done</button>
+</div></div>
+
+<div class="overlay" id="resultModal"><div class="modal">
+  <div class="result-emoji" id="resEmoji">🏆</div>
+  <div class="result-name" id="resName">You win!</div>
+  <div class="result-sub" id="resSub">Every token home.</div>
+  <div class="standings" id="resList"></div>
+  <button class="btn-play" id="againBtn">Play again</button>
+  <button class="btn-ghost" id="homeBtn">Back to menu</button>
+</div></div>
+
+<script src="app.js"></script>
