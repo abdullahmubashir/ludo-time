@@ -1,0 +1,5 @@
+# Local archive, not part of the game
+files.zip
+
+# Claude Code local settings
+.claude/
