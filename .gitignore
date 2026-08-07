@@ -3,3 +3,11 @@ files.zip
 
 # Claude Code local settings
 .claude/
+
+# Installed packages
+node_modules/
+
+# The database is this machine's own - it never belongs in the repo
+*.db
+*.db-wal
+*.db-shm

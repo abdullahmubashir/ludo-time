@@ -1,0 +1,13 @@
+{
+  "name": "ludo-time",
+  "version": "1.0.0",
+  "description": "Ludo Time - the game, and the small server that keeps everyone's profile",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node server/server.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  }
+}

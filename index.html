@@ -26,10 +26,31 @@
     <div class="pip-mini">🟢</div><div class="pip-mini">🟣</div></div>
   <div class="panel">
     <button class="btn-auth" id="googleBtn"><span class="g">G</span><span class="lbl">Continue with Google</span></button>
+    <button class="btn-auth guest" id="acctBtn">
+      <span class="g" style="background:rgba(255,255,255,.2)">🔑</span><span class="lbl">Sign in with a username</span></button>
     <button class="btn-auth guest" id="guestBtn">
       <span class="g" style="background:rgba(255,255,255,.2)">👤</span><span class="lbl">Play as guest</span></button>
     <p class="auth-note">Sign in to keep your coins and level on every device.<br>
       Guests can play everything — progress stays on this device.</p>
+  </div>
+</div>
+
+<!-- ===== ACCOUNT SIGN IN ===== -->
+<div class="screen" id="account">
+  <h1 class="logo" style="font-size:clamp(32px,9vw,44px)"><span id="acctTitleA">YOUR</span><span id="acctTitleB">ACCOUNT</span></h1>
+  <div class="panel" style="margin-top:22px">
+    <div class="field"><label class="field-label">Username</label>
+      <input type="text" id="acctName" maxlength="16" autocomplete="username"
+             autocapitalize="off" spellcheck="false" placeholder="3-16 letters, numbers or _"></div>
+    <div class="field"><label class="field-label">Password</label>
+      <input type="password" id="acctPass" maxlength="200" autocomplete="current-password"
+             placeholder="At least 6 characters"></div>
+    <p class="auth-note" id="acctMsg">Your coins and level follow this account onto any phone.</p>
+    <button class="btn-play" id="acctGoBtn">SIGN IN</button>
+    <div class="linkline">
+      <button id="acctSwapBtn">Create an account instead</button>
+      <button id="acctBackBtn">Back</button>
+    </div>
   </div>
 </div>
 

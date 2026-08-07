@@ -702,13 +702,15 @@ function paintProfile(){
   if(!PROFILE) return;
   el('profPic').textContent=PROFILE.avatar;
   el('profName').textContent=PROFILE.name;
-  el('profLv').textContent=`Level ${levelOf(PROFILE.xp)} \u00b7 ${PROFILE.won}W / ${PROFILE.played} \u00b7 ${PROFILE.provider==='google'?'Google':'Guest'}`;
+  // how they got here: Google, a username on the server, or nobody at all
+  const how = PROFILE.provider==='google' ? 'Google' : TOKEN ? 'Account' : 'Guest';
+  el('profLv').textContent=`Level ${levelOf(PROFILE.xp)} \u00b7 ${PROFILE.won}W / ${PROFILE.played} \u00b7 ${how}`;
 
   el('profXp').style.width=((PROFILE.xp%120)/120*100)+'%';
   el('profCoins').textContent=PROFILE.coins;
   el('linkGoogleBtn').style.display = PROFILE.provider==='google' ? 'none' : '';
 }
-async function saveProfile(){ await store.set(KEY,PROFILE); paintProfile(); }
+async function saveProfile(){ await store.set(KEY,PROFILE); paintProfile(); syncUp(); }
 
 (function buildAvatars(){
   const g=el('avaGrid');
@@ -719,6 +721,95 @@ async function saveProfile(){ await store.set(KEY,PROFILE); paintProfile(); }
     g.appendChild(b);
   });
 })();
+
+/* ========== ACCOUNT ON THE SERVER ==========
+   All of this is optional. A signed-in player finds their coins and level waiting on any
+   phone; a guest carries on exactly as before, saving to this device alone. Opened
+   straight off the disk there is no server to reach, and the buttons say so rather than
+   spinning forever. */
+
+const TOKEN_KEY = 'ludotime:token';
+const onWeb = location.protocol==='http:' || location.protocol==='https:';
+let TOKEN = null, acctMode = 'login';
+
+async function api(path, method='GET', body){
+  if(!onWeb) throw new Error('Open the game from a web address to use an account.');
+  const headers = {};
+  if(body)  headers['content-type'] = 'application/json';
+  if(TOKEN) headers.authorization   = 'Bearer '+TOKEN;
+
+  let res;
+  try{ res = await fetch(path, {method, headers, body: body ? JSON.stringify(body) : undefined}); }
+  catch(e){ throw new Error('Could not reach the server.'); }
+
+  const data = await res.json().catch(()=>({}));
+  if(res.status===401 && TOKEN){ TOKEN=null; store.del(TOKEN_KEY); }
+  if(!res.ok) throw new Error(data.error || 'Something went wrong.');
+  return data;
+}
+
+// pushing is fire-and-forget: a save lost to a dropped signal rides along with the next one
+function syncUp(){
+  if(!TOKEN || !PROFILE) return;
+  api('/api/profile','PUT',{profile:PROFILE}).catch(()=>{});
+}
+
+const acctSay = msg => el('acctMsg').textContent = msg;
+
+function paintAccount(){
+  const making = acctMode==='register';
+  el('acctTitleA').textContent  = making ? 'NEW' : 'YOUR';
+  el('acctTitleB').textContent  = making ? 'PLAYER' : 'ACCOUNT';
+  el('acctGoBtn').textContent   = making ? 'CREATE ACCOUNT' : 'SIGN IN';
+  el('acctSwapBtn').textContent = making ? 'I already have an account' : 'Create an account instead';
+  el('acctPass').autocomplete   = making ? 'new-password' : 'current-password';
+  acctSay(making ? 'Pick a name and password you will remember — there is no email to reset them with.'
+                 : 'Your coins and level follow this account onto any phone.');
+}
+
+function openAccount(){
+  acctMode='login'; paintAccount();
+  el('acctName').value=''; el('acctPass').value='';
+  show('account'); setTimeout(()=>el('acctName').focus(),120);
+}
+
+el('acctBtn').onclick      = ()=>{ if(!onWeb){ toast('Accounts need the game on a web address, not a file.'); return; } openAccount(); };
+el('acctBackBtn').onclick  = ()=>show('auth');
+el('acctSwapBtn').onclick  = ()=>{ acctMode = acctMode==='register' ? 'login' : 'register'; paintAccount(); };
+el('acctPass').onkeydown   = e=>{ if(e.key==='Enter') el('acctGoBtn').click(); };
+el('acctName').onkeydown   = e=>{ if(e.key==='Enter') el('acctPass').focus(); };
+
+el('acctGoBtn').onclick = async()=>{
+  const username = el('acctName').value.trim();
+  const password = el('acctPass').value;
+  const btn = el('acctGoBtn'), was = btn.textContent;
+
+  btn.disabled = true; btn.textContent = 'Please wait…';
+  try{
+    const r = await api(acctMode==='register' ? '/api/register' : '/api/login', 'POST', {username, password});
+    TOKEN = r.token;
+    await store.set(TOKEN_KEY, TOKEN);
+
+    if(r.profile){                       // this account has been played before
+      PROFILE = r.profile;
+      await store.set(KEY, PROFILE);
+      applyProfileSettings(); paintProfile(); show('home');
+      toast('Welcome back, '+PROFILE.name);
+    }else if(PROFILE){                   // guest progress on this device joins the new account
+      await saveProfile();
+      applyProfileSettings(); show('home');
+      toast('Signed in — this device’s progress came with you');
+    }else{                               // brand new, so pick a name and a face
+      pendingProvider='account'; googleAccount=null;
+      openSetup(false);
+      el('setupName').value = username.slice(0,12);
+    }
+  }catch(e){
+    acctSay(e.message);
+  }finally{
+    btn.disabled = false; btn.textContent = was;
+  }
+};
 
 /* ========== GOOGLE SIGN-IN ==========
    Paste the OAuth client ID from the Google Cloud console between the quotes. Google
@@ -811,7 +902,14 @@ el('linkGoogleBtn').onclick=()=>withGoogleButton(el('linkGoogleBtn'), async()=>{
   toast('Linked as ' + (acc.email || acc.name));
 });
 el('signOutBtn').onclick=async()=>{
-  if(!confirm('Sign out? Guest progress on this device will be removed.')) return;
+  const signedIn = !!TOKEN;
+  if(!confirm(signedIn ? 'Sign out? Your coins and level stay safe on the server.'
+                       : 'Sign out? Guest progress on this device will be removed.')) return;
+  if(signedIn){
+    syncUp();                                   // one last push before we let go of the token
+    api('/api/logout','POST').catch(()=>{});
+    TOKEN=null; await store.del(TOKEN_KEY);
+  }
   await store.del(KEY); PROFILE=null; memStore={}; googleAccount=null; show('auth');
 };
 async function reward(won){
@@ -1408,7 +1506,19 @@ function armMusic(){
 document.addEventListener('pointerdown', armMusic, {once:false});
 
 (async function boot(){
+  TOKEN   = await store.get(TOKEN_KEY);
   PROFILE = await store.get(KEY);
+
+  // the server holds the truth for a signed-in player; if it cannot be reached we play on
+  // with whatever this device remembers and push again at the next save
+  if(TOKEN){
+    try{
+      const r = await api('/api/profile');
+      if(r.profile){ PROFILE = r.profile; await store.set(KEY, PROFILE); }
+      else if(PROFILE) syncUp();
+    }catch(e){}
+  }
+
   if(PROFILE){ applyProfileSettings(); paintProfile(); show('home'); }
   else { applyTheme('classic'); show('auth'); }
 })();
