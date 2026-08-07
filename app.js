@@ -709,6 +709,8 @@ function paintProfile(){
   el('profXp').style.width=((PROFILE.xp%120)/120*100)+'%';
   el('profCoins').textContent=PROFILE.coins;
   el('linkGoogleBtn').style.display = PROFILE.provider==='google' ? 'none' : '';
+  // only a guest is offered an account; a signed-in player already has one
+  el('acctLinkBtn').style.display   = (TOKEN || !onWeb) ? 'none' : '';
 }
 async function saveProfile(){ await store.set(KEY,PROFILE); paintProfile(); syncUp(); }
 
@@ -767,13 +769,21 @@ function paintAccount(){
                  : 'Your coins and level follow this account onto any phone.');
 }
 
-function openAccount(){
-  acctMode='login'; paintAccount();
+function openAccount(mode='login'){
+  acctMode=mode; paintAccount();
   el('acctName').value=''; el('acctPass').value='';
   show('account'); setTimeout(()=>el('acctName').focus(),120);
 }
 
-el('acctBtn').onclick      = ()=>{ if(!onWeb){ toast('Accounts need the game on a web address, not a file.'); return; } openAccount(); };
+const needsWeb = () => {
+  if(onWeb) return false;
+  toast('Accounts need the game on a web address, not a file.');
+  return true;
+};
+
+el('acctBtn').onclick      = ()=>{ if(!needsWeb()) openAccount('login'); };
+// a guest who never signed in can still put what they have somewhere safe
+el('acctLinkBtn').onclick  = ()=>{ if(!needsWeb()) openAccount('register'); };
 el('acctBackBtn').onclick  = ()=>show('auth');
 el('acctSwapBtn').onclick  = ()=>{ acctMode = acctMode==='register' ? 'login' : 'register'; paintAccount(); };
 el('acctPass').onkeydown   = e=>{ if(e.key==='Enter') el('acctGoBtn').click(); };
