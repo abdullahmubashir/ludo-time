@@ -18,6 +18,26 @@ A ludo game that runs in the browser. No install, no build step — open `index.
 - **Vs Computer**, **Pass & Play** on one device, or **Play Online** with friends.
 - **Quick** matches give each player 2 gotis, **Full** gives 4 (3 on the hex board).
 
+## Google sign-in
+
+The button is wired up but needs a client ID of your own before Google will answer it.
+
+1. Open the [Google Cloud console](https://console.cloud.google.com/), make a project.
+2. **APIs & Services → OAuth consent screen** — pick *External*, fill in the app name and
+   your email, and add yourself under *Test users* while it is still unpublished.
+3. **APIs & Services → Credentials → Create credentials → OAuth client ID → Web
+   application**.
+4. Under *Authorised JavaScript origins* add every address the game is served from —
+   `http://localhost:8777` while you work on it, plus the real `https://…` address once
+   it is online. The port has to match exactly.
+5. Copy the client ID into `GOOGLE_CLIENT_ID` near the top of the sign-in section in
+   `app.js`.
+
+Two things Google will not budge on: the page must come from `http://localhost` or an
+`https://` address — a file opened straight off the disk is refused — and the origin must
+be on that list. Until the client ID is filled in the button says so and points at guest
+play, so nothing breaks either way.
+
 ## Online play
 
 One player creates a room and gets a four-letter code; the others join with it. The phones talk

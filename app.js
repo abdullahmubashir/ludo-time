@@ -720,12 +720,68 @@ async function saveProfile(){ await store.set(KEY,PROFILE); paintProfile(); }
   });
 })();
 
-el('guestBtn').onclick=()=>{ pendingProvider='guest'; openSetup(false); };
-el('googleBtn').onclick=()=>{
-  pendingProvider='google';
-  toast('Demo build — real Google sign-in runs through Firebase Auth');
-  setTimeout(()=>openSetup(false),700);
-};
+/* ========== GOOGLE SIGN-IN ==========
+   Paste the OAuth client ID from the Google Cloud console between the quotes. Google
+   only answers pages served over http://localhost or https:// whose origin is listed as
+   an authorised JavaScript origin — a page opened straight off the disk (file://) is
+   turned away, so the button says so instead of pretending to work. */
+const GOOGLE_CLIENT_ID = '';
+
+let googleAccount = null, googleBusy = false;
+
+function googleBlocker(){
+  if(!GOOGLE_CLIENT_ID) return 'Google sign-in is not set up yet — see the README. Play as guest meanwhile.';
+  if(location.protocol!=='http:' && location.protocol!=='https:')
+    return 'Google needs the game on a web address, not a file opened from the disk.';
+  if(!(window.google && google.accounts && google.accounts.oauth2))
+    return 'Could not reach Google — check the connection, or play as guest.';
+  return null;
+}
+
+// opens Google's account chooser and hands back the picked account, or throws
+function googleSignIn(){
+  return new Promise((resolve,reject)=>{
+    google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: 'openid email profile',
+      callback: async r=>{
+        if(r.error){ reject(new Error(r.error)); return; }
+        try{
+          const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo',
+            { headers:{ Authorization:'Bearer '+r.access_token } });
+          if(!res.ok) throw new Error('userinfo '+res.status);
+          resolve(await res.json());
+        }catch(e){ reject(e); }
+      },
+      error_callback: e=>reject(new Error(e && e.type ? e.type : 'cancelled'))
+    }).requestAccessToken({ prompt:'select_account' });
+  });
+}
+
+// keeps the button honest while the popup is open
+async function withGoogleButton(btn, run){
+  if(googleBusy) return;
+  const blocked = googleBlocker();
+  if(blocked){ toast(blocked); return; }
+  const lbl = btn.querySelector('.lbl') || btn, was = lbl.textContent;
+  googleBusy = true; btn.disabled = true; lbl.textContent = 'Waiting for Google…';
+  try{ await run(); }
+  catch(e){
+    toast(/cancel|closed|denied/i.test(e.message) ? 'Sign-in cancelled'
+                                                  : 'Google sign-in failed — try again, or play as guest');
+  }
+  finally{ googleBusy = false; btn.disabled = false; lbl.textContent = was; }
+}
+
+el('guestBtn').onclick=()=>{ pendingProvider='guest'; googleAccount=null; openSetup(false); };
+el('googleBtn').onclick=()=>withGoogleButton(el('googleBtn'), async()=>{
+  const acc = await googleSignIn();
+  googleAccount = acc;
+  pendingProvider = 'google';
+  openSetup(false);
+  // the name box starts on the Google first name, so most players just tap save
+  el('setupName').value = (acc.given_name || acc.name || '').trim().slice(0,12);
+});
 function openSetup(prefill){
   el('setupName').value = prefill ? PROFILE.name : '';
   if(prefill){
@@ -739,14 +795,24 @@ el('saveProfBtn').onclick=async()=>{
   if(n.length<2){ toast('Enter a name with at least 2 characters'); return; }
   if(PROFILE){ PROFILE.name=n; PROFILE.avatar=pickedAva; }
   else PROFILE={name:n,avatar:pickedAva,provider:pendingProvider,coins:500,xp:0,played:0,won:0,
-    theme:'classic',owned:['classic'],music:'mellow',vol:70,since:Date.now()};
+    theme:'classic',owned:['classic'],music:'mellow',vol:70,since:Date.now(),
+    email: googleAccount ? googleAccount.email : null,
+    googleId: googleAccount ? googleAccount.sub : null};
   await saveProfile(); applyProfileSettings(); show('home');
 };
 el('editProfBtn').onclick=()=>openSetup(true);
-el('linkGoogleBtn').onclick=async()=>{ PROFILE.provider='google'; await saveProfile(); toast('Account linked — coins and level now sync'); };
+el('linkGoogleBtn').onclick=()=>withGoogleButton(el('linkGoogleBtn'), async()=>{
+  const acc = await googleSignIn();
+  googleAccount = acc;
+  PROFILE.provider = 'google';
+  PROFILE.email    = acc.email || null;
+  PROFILE.googleId = acc.sub   || null;
+  await saveProfile();
+  toast('Linked as ' + (acc.email || acc.name));
+});
 el('signOutBtn').onclick=async()=>{
   if(!confirm('Sign out? Guest progress on this device will be removed.')) return;
-  await store.del(KEY); PROFILE=null; memStore={}; show('auth');
+  await store.del(KEY); PROFILE=null; memStore={}; googleAccount=null; show('auth');
 };
 async function reward(won){
   if(!PROFILE) return won?120:25;
@@ -948,6 +1014,23 @@ function setMusic(style){
   saveProfile();
 }
 
+// leaving the app should leave silence behind: stop the loop and halt the audio
+// clock, so nothing keeps ringing once the tab is hidden or closed
+let musicWasPlaying = false;
+function silenceAudio(){
+  musicWasPlaying = !!music.timer;
+  music.stop();
+  if(AC && AC.state==='running') AC.suspend();
+}
+function restoreAudio(){
+  if(AC && AC.state==='suspended') AC.resume();
+  if(musicWasPlaying && PROFILE && PROFILE.music && PROFILE.music!=='off') music.play(PROFILE.music);
+  musicWasPlaying = false;
+}
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden) silenceAudio(); else restoreAudio();
+});
+window.addEventListener('pagehide', silenceAudio);
 
 
 /* ========== FULLSCREEN ========== */
