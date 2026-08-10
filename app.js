@@ -691,6 +691,34 @@ function toast(msg){
 }
 const levelOf = xp => 1+Math.floor(xp/120);
 
+/* The browser's own confirm box wears the page address like a warning label and freezes
+   everything behind it — a strange thing to walk into in the middle of a match. This one
+   is part of the game, so leaving a match feels like leaving a match. */
+function ask(title, text, yes='Yes', no='Cancel', emoji='🎲'){
+  return new Promise(done=>{
+    el('askEmoji').textContent = emoji;
+    el('askTitle').textContent = title;
+    el('askText').textContent  = text || '';
+    el('askYes').textContent   = yes;
+    el('askNo').textContent    = no;
+
+    const box = el('askModal');
+    const answer = said => {
+      box.classList.remove('show');
+      el('askYes').onclick = el('askNo').onclick = null;
+      document.removeEventListener('keydown', onKey);
+      done(said);
+    };
+    // Escape means no, the same as it does everywhere else
+    const onKey = e => { if(e.key==='Escape') answer(false); };
+
+    el('askYes').onclick = ()=>answer(true);
+    el('askNo').onclick  = ()=>answer(false);
+    document.addEventListener('keydown', onKey);
+    box.classList.add('show');
+  });
+}
+
 function paintProfile(){
   if(!PROFILE) return;
   el('profPic').textContent=PROFILE.avatar;
@@ -917,8 +945,11 @@ el('linkGoogleBtn').onclick=()=>withGoogleButton(el('linkGoogleBtn'), async()=>{
 });
 el('signOutBtn').onclick=async()=>{
   const signedIn = !!TOKEN;
-  if(!confirm(signedIn ? 'Sign out? Your coins and level stay safe on the server.'
-                       : 'Sign out? Guest progress on this device will be removed.')) return;
+  const okay = await ask('Sign out?',
+    signedIn ? 'Your coins and level stay safe — sign back in any time to pick them up.'
+             : 'You are playing as a guest, so the coins and level on this device go with it.',
+    'Sign out', 'Stay', signedIn ? '👋' : '⚠️');
+  if(!okay) return;
   if(signedIn){
     syncUp();                                   // one last push before we let go of the token
     api('/api/logout','POST').catch(()=>{});
@@ -1270,7 +1301,10 @@ el('rollBtn').onclick=rollDice;
 document.querySelector('.dice-stage').onclick=rollDice;
 el('soundBtn').onclick=()=>{ sound=!sound; el('soundBtn').textContent=sound?'🔊':'🔇'; el('soundBtn').classList.toggle('off',!sound); };
 el('tiltBtn').onclick=()=>{ tilt=!tilt; board.style.setProperty('--tilt',tilt?'16deg':'0deg'); renderTokens(); };
-el('quitBtn').onclick=()=>{ if(confirm('Leave this game?')) toMenu(); };
+el('quitBtn').onclick=async()=>{
+  if(await ask('Leave this game?','The match ends here and nobody wins it.','Leave','Keep playing','🚪'))
+    toMenu();
+};
 el('againBtn').onclick=()=>{
   el('resultModal').classList.remove('show');
   newGame(cfgCount,cfgMode,PROFILE.name,cfgLen);
