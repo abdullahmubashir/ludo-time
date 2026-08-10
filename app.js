@@ -730,8 +730,9 @@ function paintProfile(){
   el('profXp').style.width=((PROFILE.xp%120)/120*100)+'%';
   el('profCoins').textContent=PROFILE.coins;
   el('linkGoogleBtn').style.display = PROFILE.provider==='google' ? 'none' : '';
-  // only a guest is offered an account; a signed-in player already has one
-  el('acctLinkBtn').style.display   = (TOKEN || !onWeb) ? 'none' : '';
+  // only a guest is offered an account; a signed-in player already has one. It stays on
+  // show even where it cannot work, because a missing button looks like a missing feature
+  el('acctLinkBtn').style.display   = TOKEN ? 'none' : '';
 }
 async function saveProfile(){ await store.set(KEY,PROFILE); paintProfile(); syncUp(); }
 
@@ -806,14 +807,16 @@ el('acctBtn').onclick      = ()=>{ if(!needsWeb()) openAccount('login'); };
 // a guest who never signed in can still put what they have somewhere safe
 el('acctLinkBtn').onclick  = ()=>{ if(!needsWeb()) openAccount('register'); };
 
-// Opened straight off the disk both of these lead nowhere, and a button that answers a tap
-// with a message that fades reads as a broken button. Say it on the face instead.
+// Opened straight off the disk these lead nowhere, and a button that answers a tap with a
+// message that fades reads as a broken button. Say it on the face instead - and leave them
+// in place, because a button that vanishes reads as a feature that was never built.
 if(!onWeb){
-  for(const [id, why] of [['googleBtn','Google needs the game online'],
-                          ['acctBtn'  ,'Accounts need the game online']]){
+  for(const [id, why] of [['googleBtn'  ,'Google needs the game online'],
+                          ['acctBtn'    ,'Accounts need the game online'],
+                          ['acctLinkBtn','Accounts need the game online']]){
     const b = el(id);
-    b.style.opacity = '.4';
-    b.querySelector('.lbl').textContent = why;
+    b.style.opacity = '.45';
+    (b.querySelector('.lbl') || b).textContent = why;
   }
 }
 el('acctBackBtn').onclick  = ()=>show('auth');

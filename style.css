@@ -39,10 +39,13 @@ body::before{
 }
 button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit}
 .screen{display:none;width:100%;max-width:540px}
-.screen.active{display:flex;flex-direction:column;height:100%;min-height:0}
+/* Asking for overflow-y on its own is not enough: a box that scrolls one way is made to
+   scroll both, so anything a few pixels too wide hands the player a sideways scrollbar
+   they never wanted. Nothing here is ever meant to go off the side. */
+.screen.active{display:flex;flex-direction:column;height:100%;min-height:0;overflow-x:hidden}
 /* the shorter screens simply centre their panel */
 #auth.active,#setup.active,#match.active{justify-content:center;overflow-y:auto}
-#home.active{overflow-y:auto}
+#home.active,#account.active{overflow-y:auto}
 
 /* ---- shared bits ---- */
 .logo{
@@ -165,7 +168,7 @@ input::placeholder{color:#7d8fa4}
 .xpwrap{height:4px;border-radius:3px;background:rgba(255,255,255,.14);overflow:hidden;margin-bottom:2px;flex:none}
 .xpwrap i{display:block;height:100%;background:linear-gradient(90deg,#7ef0b0,var(--gold))}
 
-.hero-wrap{position:relative;margin:0 -6px 6px;flex:1;min-height:60px;
+.hero-wrap{position:relative;margin:0 0 6px;flex:1;min-height:60px;
   display:flex;flex-direction:column;justify-content:center}
 .hero{width:100%;flex:1;min-height:0;display:block}
 #bigLogo{margin:0 0 -6px;flex:none;font-size:clamp(26px,8.5vw,50px);position:relative;z-index:2;
@@ -231,9 +234,13 @@ input::placeholder{color:#7d8fa4}
 
 .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px;flex:none}
 .brand-sm{font-family:var(--display);font-weight:600;font-size:19px;color:var(--gold);
-  text-shadow:0 2px 0 rgba(0,0,0,.35)}
-.icons{display:flex;gap:7px}
-.icon-btn{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;font-size:16px;
+  text-shadow:0 2px 0 rgba(0,0,0,.35);
+  min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* six buttons at a fixed size run off the edge of a small phone, so they give up a little
+   width as the screen narrows rather than pushing the row past it */
+.icons{display:flex;gap:clamp(4px,1.4vw,7px);flex:none}
+.icon-btn{width:clamp(30px,9.2vw,36px);height:clamp(30px,9.2vw,36px);flex:none;
+  border-radius:11px;display:grid;place-items:center;font-size:clamp(14px,4.3vw,16px);
   background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#dff0e8}
 .icon-btn:hover{background:rgba(255,255,255,.2)}
 .icon-btn.off{opacity:.4}
