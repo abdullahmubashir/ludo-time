@@ -330,13 +330,18 @@ const esc = s => String(s).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp
 /* ========== TURN FLOW ========== */
 const cur = () => S.players[S.turnAt];
 
+// every seat that is not the computer belongs to somebody sitting right here
+function myTurn(){
+  if(!S || S.over) return false;
+  return !cur().cpu;
+}
+
 function startTurn(){
-  if(S.over || !isHost()) return;
-  S.rolled=false; S.dice=0; NET.lastDice=0;
+  if(S.over) return;
+  S.rolled=false; S.dice=0;
   updateTurnUI(); highlight([]);
   el('rollBtn').disabled = !myTurn();
   document.querySelector('.dice-stage').classList.toggle('ready', myTurn());
-  push();
   startTimer();
   if(cur().cpu) setTimeout(rollDice,750);
 }
@@ -354,7 +359,7 @@ let timerId=null;
 function startTimer(){
   clearInterval(timerId);
   S.players.forEach((_,i)=>{const b=el('tm'+i); if(b) b.style.width='0%';});
-  if(cur().cpu || NET.mode==='guest') return;
+  if(cur().cpu) return;
   const bar=el('tm'+S.turnAt); let t=0; const LIMIT=18000;
   timerId=setInterval(()=>{
     t+=100; bar.style.width=(t/LIMIT*100)+'%';
@@ -365,7 +370,6 @@ function stopTimer(){ clearInterval(timerId); const b=el('tm'+S.turnAt); if(b) b
 
 function autoPlay(){
   if(busy||S.over) return;
-  if(NET.mode==='guest'){ if(!S.rolled) askRoll(); return; }
   if(!S.rolled) rollDice();
   else { const m=legalMoves(cur(),S.dice); if(m.length) doMove(cur(),m[0]); }
 }
@@ -398,17 +402,9 @@ function showFace(v,animate){
   d.style.transform = `rotateX(${diceX}deg) rotateY(${diceY}deg) rotateZ(${diceZ}deg)`;
 }
 
-function askRoll(){ if(NET.conns[0]) netSend(NET.conns[0],{t:'roll'}); }
-function askMove(ti){ if(NET.conns[0]) netSend(NET.conns[0],{t:'move',ti}); }
-
 function rollDice(){
   if(S && S.over) return;
-  if(NET.mode==='guest'){
-    if(!myTurn() || S.rolled) return;
-    el('rollBtn').disabled=true; askRoll(); return;
-  }
   if(busy||S.rolled) return;
-  if(online() && !myTurn()) return;
   busy=true; stopTimer(); el('rollBtn').disabled=true;
   const st=document.querySelector('.dice-stage');
   st.classList.remove('ready');
@@ -420,7 +416,6 @@ function rollDice(){
   setTimeout(()=>{
     st.classList.remove('throw');
     S.dice=v; S.rolled=true; busy=false; afterRoll(v);
-    push();
   },1250);
 }
 
@@ -447,10 +442,9 @@ function afterRoll(v){
 }
 
 function sameSeat(){
-  S.rolled=false; S.dice=0; NET.lastDice=0;
+  S.rolled=false; S.dice=0;
   el('rollBtn').disabled = !myTurn();
   document.querySelector('.dice-stage').classList.toggle('ready', myTurn());
-  push();
   updateTurnUI(cur().cpu?'Thinking…':'Roll again');
   startTimer();
   if(cur().cpu) setTimeout(rollDice,650);
@@ -502,7 +496,6 @@ function onTokenTap(pid,ti){
   const p=cur();
   if(p.id!==pid || !S.rolled || !myTurn()) return;
   if(!legalMoves(p,S.dice).includes(ti)) return;
-  if(NET.mode==='guest'){ highlight([]); clearTargets(); askMove(ti); return; }
   if(busy) return;
   doMove(p,ti);
 }
@@ -563,7 +556,7 @@ async function doMove(p,ti){
     busy=false; S.sixes=0; nextTurn(); return;
   }
 
-  busy=false; push();
+  busy=false;
   if(extra) sameSeat(); else { S.sixes=0; nextTurn(); }
 }
 
@@ -624,7 +617,7 @@ function pickCPU(p,moves,v){
 const ORD=['','1st','2nd','3rd','4th','5th','6th'];
 
 async function finish(){
-  S.over=true; busy=false; stopTimer(); push(); highlight([]); clearTargets();
+  S.over=true; busy=false; stopTimer(); highlight([]); clearTargets();
   const me = S.players[0];
   const won = me.rank===1;
   if(won) confetti();
@@ -784,6 +777,17 @@ const needsWeb = () => {
 el('acctBtn').onclick      = ()=>{ if(!needsWeb()) openAccount('login'); };
 // a guest who never signed in can still put what they have somewhere safe
 el('acctLinkBtn').onclick  = ()=>{ if(!needsWeb()) openAccount('register'); };
+
+// Opened straight off the disk both of these lead nowhere, and a button that answers a tap
+// with a message that fades reads as a broken button. Say it on the face instead.
+if(!onWeb){
+  for(const [id, why] of [['googleBtn','Google needs the game online'],
+                          ['acctBtn'  ,'Accounts need the game online']]){
+    const b = el(id);
+    b.style.opacity = '.4';
+    b.querySelector('.lbl').textContent = why;
+  }
+}
 el('acctBackBtn').onclick  = ()=>show('auth');
 el('acctSwapBtn').onclick  = ()=>{ acctMode = acctMode==='register' ? 'login' : 'register'; paintAccount(); };
 el('acctPass').onkeydown   = e=>{ if(e.key==='Enter') el('acctGoBtn').click(); };
@@ -1183,200 +1187,6 @@ if(!fsSupported){ [el('fsBtn'), el('fsBtn2')].forEach(b=>{ if(b) b.style.display
 paintFullscreen();
 
 
-/* ========== ONLINE PLAY (phone talks straight to phone) ==========
-   One player hosts. The host runs the whole game and sends a snapshot of the
-   board after every change. Guests send only their intent ("roll", "move this
-   goti") and draw whatever the host sends back, so nobody can drift apart. */
-const NET = {mode:null, peer:null, conns:[], seats:[], myseat:0, code:'', lastDice:0};
-const isHost  = () => NET.mode !== 'guest';
-const online  = () => NET.mode === 'host' || NET.mode === 'guest';
-function myTurn(){
-  if(!S || S.over) return false;
-  if(online()) return S.turnAt === NET.myseat;
-  return !cur().cpu;
-}
-const netMsg = t => { const e=el('netMsg'); if(e) e.textContent = t; };
-const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-const makeCode = () => Array.from({length:4},()=>CODE_CHARS[Math.floor(Math.random()*CODE_CHARS.length)]).join('');
-
-function netSend(conn,obj){ try{ conn.send(obj); }catch(e){} }
-function broadcast(obj){ NET.conns.forEach(c=>{ if(c.open) netSend(c,obj); }); }
-
-function snapshot(){
-  return { t:'snap',
-    tk: S.players.map(p=>p.tokens.slice()),
-    rk: S.players.map(p=>p.rank),
-    turnAt:S.turnAt, dice:S.dice, rolled:S.rolled, over:S.over, sixes:S.sixes };
-}
-function push(){ if(NET.mode==='host' && S) broadcast(snapshot()); }
-
-function applySnapshot(x){
-  if(!S) return;
-  x.tk.forEach((t,i)=>{ if(S.players[i]) S.players[i].tokens = t; });
-  x.rk.forEach((r,i)=>{ if(S.players[i]) S.players[i].rank = r; });
-  S.turnAt=x.turnAt; S.rolled=x.rolled; S.over=x.over; S.sixes=x.sixes;
-
-  if(x.dice && x.dice !== NET.lastDice){          // a fresh roll — show it tumble
-    NET.lastDice = x.dice;
-    const st=document.querySelector('.dice-stage');
-    st.classList.remove('throw'); void st.offsetWidth; st.classList.add('throw');
-    showFace(x.dice,true); sfx.roll(); setTimeout(()=>sfx.land(),980);
-    setTimeout(()=>st.classList.remove('throw'),1250);
-  }
-  S.dice = x.dice;
-  if(!x.rolled) NET.lastDice = 0;
-
-  renderTokens(); paintCards();
-  S.players.forEach((_,i)=>el('pc'+i).classList.toggle('turn', i===S.turnAt));
-  const p=cur();
-  el('turnWho').textContent = myTurn() ? 'Your turn' : p.name+"'s turn";
-  el('turnWho').style.color = `var(${CVAR[p.id]}l)`;
-  el('rollBtn').disabled = !myTurn() || S.rolled;
-  document.querySelector('.dice-stage').classList.toggle('ready', myTurn() && !S.rolled);
-
-  if(myTurn() && S.rolled){
-    const mv = legalMoves(p, S.dice);
-    el('turnHint').textContent = mv.length ? 'Pick a goti' : 'No move';
-    highlight(mv.map(ti=>[p.id,ti])); showTargets(p,mv);
-  } else {
-    el('turnHint').textContent = myTurn() ? 'Tap ROLL' : 'Waiting\u2026';
-    highlight([]); clearTargets();
-  }
-  if(S.over) showOnlineResult();
-}
-
-let shownResult=false;
-async function showOnlineResult(){
-  if(shownResult) return; shownResult=true;
-  stopTimer(); busy=false;
-  const me = S.players[NET.myseat];
-  const won = me && me.rank === 1;
-  if(won) confetti();
-  sfx.win();
-  el('resEmoji').textContent = won ? '\U0001F3C6' : '\U0001F3B2';
-  el('resName').textContent  = won ? 'You win!' : 'Match over';
-  const got = await reward(won);
-  el('resSub').textContent = (me && me.rank ? `You finished #${me.rank}. ` : '') + `+${got} coins`;
-  setTimeout(()=>el('resultModal').classList.add('show'),700);
-}
-
-/* ---------- host ---------- */
-function paintRoom(){
-  const list=el('netList'); list.innerHTML='';
-  const rows = [{name:PROFILE.name, me:true}].concat(NET.conns.map(c=>({name:c.label||'Player', me:false})));
-  rows.forEach((r,i)=>{
-    const d=document.createElement('div'); d.className='netrow';
-    d.innerHTML=`<span class="dotc" style="background:var(${CVAR[i]})"></span>${esc(r.name)}`
-      + (r.me?'<span class="you">YOU \u00b7 HOST</span>':'');
-    list.appendChild(d);
-  });
-  const n = rows.length;
-  el('netStartBtn').disabled = n < 2;
-  el('netStartBtn').textContent = n < 2 ? 'WAITING FOR PLAYERS\u2026' : `START MATCH \u00b7 ${n} PLAYERS`;
-}
-
-function hostRoom(){
-  if(typeof Peer === 'undefined'){ netMsg('Could not load the connection library \u2014 check your internet.'); return; }
-  NET.mode='host'; NET.code=makeCode(); NET.myseat=0; NET.conns=[];
-  el('netPick').style.display='none'; el('netRoom').style.display='';
-  el('roomCode').textContent=NET.code;
-  netMsg('Opening the room\u2026');
-  NET.peer = new Peer('ludotime-'+NET.code, {debug:0});
-  NET.peer.on('open', ()=>{ netMsg('Room is open. Share the code.'); paintRoom(); });
-  NET.peer.on('error', e=>{
-    if(String(e).includes('taken')){ NET.code=makeCode(); el('roomCode').textContent=NET.code;
-      netMsg('Code was busy, made a new one \u2014 try again.'); }
-    else netMsg('Connection problem: '+(e.type||e.message||e));
-  });
-  NET.peer.on('connection', conn=>{
-    if(NET.conns.length >= 5 || (S && !S.over)){ conn.on('open',()=>{ netSend(conn,{t:'full'}); setTimeout(()=>conn.close(),400); }); return; }
-    NET.conns.push(conn);
-    conn.on('open', ()=>{ netSend(conn,{t:'seat', seat:NET.conns.indexOf(conn)+1}); paintRoom(); });
-    conn.on('data', d=>onHostData(conn,d));
-    conn.on('close', ()=>{
-      NET.conns = NET.conns.filter(c=>c!==conn);
-      paintRoom(); toast((conn.label||'A player')+' left');
-    });
-  });
-}
-
-function onHostData(conn,d){
-  if(d.t==='hello'){ conn.label = String(d.name||'Player').slice(0,12); paintRoom(); return; }
-  const seat = NET.conns.indexOf(conn)+1;
-  if(!S || S.over || seat !== S.turnAt) return;
-  if(d.t==='roll'  && !S.rolled) rollDice();
-  if(d.t==='move'  && S.rolled && legalMoves(S.players[seat], S.dice).includes(d.ti))
-    doMove(S.players[seat], d.ti);
-}
-
-function hostStart(){
-  const names = [PROFILE.name].concat(NET.conns.map(c=>c.label||'Player'));
-  const n = names.length;
-  const count = n===5 ? 5 : n;                 // 2,3,4,5,6 all supported
-  const len = document.querySelector('#segLenNet button.on').dataset.v;
-  broadcast({t:'start', count, len, names});
-  shownResult=false; NET.lastDice=0;
-  newGame(count,'online',PROFILE.name,len,names);
-}
-
-/* ---------- guest ---------- */
-function joinRoom(code){
-  if(typeof Peer === 'undefined'){ netMsg('Could not load the connection library \u2014 check your internet.'); return; }
-  NET.mode='guest'; NET.conns=[];
-  netMsg('Connecting\u2026');
-  NET.peer = new Peer({debug:0});
-  NET.peer.on('open', ()=>{
-    const conn = NET.peer.connect('ludotime-'+code, {reliable:true});
-    NET.conns=[conn];
-    conn.on('open', ()=>{ netMsg('Connected. Waiting for the host to start\u2026');
-                          netSend(conn,{t:'hello', name:PROFILE.name}); });
-    conn.on('data', d=>onGuestData(d));
-    conn.on('error',()=>netMsg('Could not reach that room. Check the code.'));
-    conn.on('close', ()=>{ toast('Host disconnected'); netMsg('The host closed the room.'); });
-    setTimeout(()=>{ if(!conn.open) netMsg('No answer \u2014 is the code right and the host still on that screen?'); },7000);
-  });
-  NET.peer.on('error', e=>netMsg('Connection problem: '+(e.type||e.message||e)));
-}
-
-function onGuestData(d){
-  if(d.t==='seat'){ NET.myseat=d.seat; netMsg('You are player '+(d.seat+1)+'. Waiting for the host\u2026'); }
-  if(d.t==='full'){ netMsg('That room is full or already playing.'); }
-  if(d.t==='start'){
-    shownResult=false; NET.lastDice=0;
-    newGame(d.count,'online',PROFILE.name,d.len,d.names);
-  }
-  if(d.t==='snap') applySnapshot(d);
-}
-
-/* ---------- lobby wiring ---------- */
-el('onlineBtn').onclick = ()=>{
-  NET.mode=null; NET.conns=[];
-  el('netPick').style.display=''; el('netJoin').style.display='none'; el('netRoom').style.display='none';
-  netMsg('Everyone needs the same link open. One person creates a room, the rest join with the code.');
-  show('online');
-};
-el('hostBtn').onclick = hostRoom;
-el('joinPickBtn').onclick = ()=>{ el('netPick').style.display='none'; el('netJoin').style.display='';
-  netMsg('Ask the host for their 4-letter code.'); setTimeout(()=>el('codeIn').focus(),120); };
-el('joinGoBtn').onclick = ()=>{
-  const c = el('codeIn').value.trim().toUpperCase();
-  if(c.length!==4){ netMsg('The code is 4 characters.'); return; }
-  joinRoom(c);
-};
-el('copyCodeBtn').onclick = ()=>{
-  try{ navigator.clipboard.writeText(NET.code); toast('Code copied'); }
-  catch(e){ toast('Code: '+NET.code); }
-};
-document.querySelectorAll('#segLenNet button').forEach(b=>b.onclick=()=>{
-  document.querySelectorAll('#segLenNet button').forEach(x=>x.classList.remove('on'));
-  b.classList.add('on');
-});
-el('netStartBtn').onclick = hostStart;
-el('netBackBtn').onclick = ()=>{
-  try{ if(NET.peer) NET.peer.destroy(); }catch(e){}
-  NET.mode=null; NET.peer=null; NET.conns=[]; show('home');
-};
-
 /* ========== SHOP + MUSIC WIRING ========== */
 el('shopBtn').onclick=()=>{ renderShop(); el('shopModal').classList.add('show'); };
 el('musicBtn').onclick=()=>el('musicModal').classList.add('show');
@@ -1463,13 +1273,11 @@ el('tiltBtn').onclick=()=>{ tilt=!tilt; board.style.setProperty('--tilt',tilt?'1
 el('quitBtn').onclick=()=>{ if(confirm('Leave this game?')) toMenu(); };
 el('againBtn').onclick=()=>{
   el('resultModal').classList.remove('show');
-  if(online()){ toast('Ask the host to start a new match'); if(NET.mode==='host'){ show('online'); paintRoom(); } return; }
   newGame(cfgCount,cfgMode,PROFILE.name,cfgLen);
 };
 el('homeBtn').onclick=()=>{ el('resultModal').classList.remove('show'); toMenu(); };
 function toMenu(){
   stopTimer(); if(S) S.over=true; busy=false;
-  if(online()){ try{ if(NET.peer) NET.peer.destroy(); }catch(e){} NET.mode=null; NET.peer=null; NET.conns=[]; }
   paintProfile(); show('home');
 }
 

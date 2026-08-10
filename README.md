@@ -21,8 +21,13 @@ under `server/` is optional — leave it alone and the game still plays, guests 
 ## Playing
 
 - **2 to 6 players.** Two, three and four use the classic cross board; five and six use a hexagonal one.
-- **Vs Computer**, **Pass & Play** on one device, or **Play Online** with friends.
+- **Vs Computer**, or **Pass & Play** with everyone round one device.
 - **Quick** matches give each player 2 gotis, **Full** gives 4 (3 on the hex board).
+
+Playing against people elsewhere is not here yet. It used to work by passing a four-letter
+code around and letting the phones talk to each other directly, which meant no matchmaking,
+no game surviving the host walking away, and nothing stopping a determined host from
+cheating. That has been taken out to make room for proper matchmaking through the server.
 
 ## Accounts
 
@@ -72,12 +77,6 @@ Two things Google will not budge on: the page must come from `http://localhost` 
 `https://` address — a file opened straight off the disk is refused — and the origin must
 be on that list. Until the client ID is filled in the button says so and points at guest
 play, so nothing breaks either way.
-
-## Online play
-
-One player creates a room and gets a four-letter code; the others join with it. The phones talk
-straight to each other — there is no game server. Whoever creates the room runs the match and
-sends the board to everyone else after each move, so nobody's board can drift out of step.
 
 ## Rules
 
