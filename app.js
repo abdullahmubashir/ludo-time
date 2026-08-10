@@ -753,17 +753,34 @@ async function saveProfile(){ await store.set(KEY,PROFILE); paintProfile(); sync
    spinning forever. */
 
 const TOKEN_KEY = 'ludotime:token';
-const onWeb = location.protocol==='http:' || location.protocol==='https:';
-let TOKEN = null, acctMode = 'login';
+
+/* Where the account server lives. A page served over http or https talks to whatever
+   served it. A single downloaded copy has no server of its own, so it calls out to this
+   address instead - put the deployed one here and a copy on anybody's disk signs in just
+   the same. Whether anything is actually listening is settled at startup, not guessed. */
+const SERVER_URL = 'http://localhost:8777';
+
+const onWeb    = location.protocol==='http:' || location.protocol==='https:';
+const API_BASE = onWeb ? '' : SERVER_URL;
+
+let TOKEN = null, acctMode = 'login', serverUp = onWeb;
+
+// one quick knock at the door, so the buttons can tell the truth before anyone taps them
+async function findServer(){
+  if(onWeb) return true;
+  try{
+    const r = await fetch(API_BASE + '/api/health', {method:'GET'});
+    return r.ok;
+  }catch(e){ return false; }
+}
 
 async function api(path, method='GET', body){
-  if(!onWeb) throw new Error('Open the game from a web address to use an account.');
   const headers = {};
   if(body)  headers['content-type'] = 'application/json';
   if(TOKEN) headers.authorization   = 'Bearer '+TOKEN;
 
   let res;
-  try{ res = await fetch(path, {method, headers, body: body ? JSON.stringify(body) : undefined}); }
+  try{ res = await fetch(API_BASE + path, {method, headers, body: body ? JSON.stringify(body) : undefined}); }
   catch(e){ throw new Error('Could not reach the server.'); }
 
   const data = await res.json().catch(()=>({}));
@@ -797,26 +814,28 @@ function openAccount(mode='login'){
   show('account'); setTimeout(()=>el('acctName').focus(),120);
 }
 
-const needsWeb = () => {
-  if(onWeb) return false;
-  toast('Accounts need the game on a web address, not a file.');
+const needsServer = () => {
+  if(serverUp) return false;
+  toast('No server answered — accounts need one running.');
   return true;
 };
 
-el('acctBtn').onclick      = ()=>{ if(!needsWeb()) openAccount('login'); };
+el('acctBtn').onclick      = ()=>{ if(!needsServer()) openAccount('login'); };
 // a guest who never signed in can still put what they have somewhere safe
-el('acctLinkBtn').onclick  = ()=>{ if(!needsWeb()) openAccount('register'); };
+el('acctLinkBtn').onclick  = ()=>{ if(!needsServer()) openAccount('register'); };
 
-// Opened straight off the disk these lead nowhere, and a button that answers a tap with a
-// message that fades reads as a broken button. Say it on the face instead - and leave them
-// in place, because a button that vanishes reads as a feature that was never built.
-if(!onWeb){
-  for(const [id, why] of [['googleBtn'  ,'Google needs the game online'],
-                          ['acctBtn'    ,'Accounts need the game online'],
-                          ['acctLinkBtn','Accounts need the game online']]){
-    const b = el(id);
-    b.style.opacity = '.45';
-    (b.querySelector('.lbl') || b).textContent = why;
+/* Called once the knock at the door has been answered. Where nothing is listening these
+   buttons lead nowhere, and a button that answers a tap with a message that fades reads as
+   a broken button - so it says why on its own face. It never disappears, because a button
+   that vanishes reads as a feature that was never built. */
+function paintServerState(){
+  const off = [['googleBtn'  ,'Continue with Google'      ,'Google needs a server'],
+               ['acctBtn'    ,'Sign in with a username'   ,'No server to sign in to'],
+               ['acctLinkBtn','Save progress to an account','No server to save to']];
+  for(const [id, onText, offText] of off){
+    const b = el(id); if(!b) continue;
+    b.style.opacity = serverUp ? '' : '.45';
+    (b.querySelector('.lbl') || b).textContent = serverUp ? onText : offText;
   }
 }
 el('acctBackBtn').onclick  = ()=>show('auth');
@@ -1364,9 +1383,13 @@ document.addEventListener('pointerdown', armMusic, {once:false});
   TOKEN   = await store.get(TOKEN_KEY);
   PROFILE = await store.get(KEY);
 
+  // find out whether anybody is listening before the buttons make any promises
+  serverUp = await findServer();
+  paintServerState();
+
   // the server holds the truth for a signed-in player; if it cannot be reached we play on
   // with whatever this device remembers and push again at the next save
-  if(TOKEN){
+  if(TOKEN && serverUp){
     try{
       const r = await api('/api/profile');
       if(r.profile){ PROFILE = r.profile; await store.set(KEY, PROFILE); }

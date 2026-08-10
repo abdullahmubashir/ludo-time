@@ -31,9 +31,21 @@ const TYPES = {
 
 /* ---------- small helpers ---------- */
 
+/* A copy of the game opened straight off the disk counts as coming from nowhere, and a
+   browser will not let nowhere talk to us unless we say it may. Saying so is what lets a
+   downloaded copy sign in. There are no cookies here - a caller has to hold a token that
+   only ever lived in their own browser storage - so opening the door costs nothing that
+   was not already reachable from any machine on the internet. */
+const CORS = {
+  'access-control-allow-origin' : '*',
+  'access-control-allow-headers': 'content-type, authorization',
+  'access-control-allow-methods': 'GET, POST, PUT, OPTIONS',
+  'access-control-max-age'      : '86400'
+};
+
 function send(res, status, body, type='application/json; charset=utf-8'){
   const data = typeof body === 'string' ? body : JSON.stringify(body);
-  res.writeHead(status, { 'content-type': type, 'cache-control': 'no-store' });
+  res.writeHead(status, { 'content-type': type, 'cache-control': 'no-store', ...CORS });
   res.end(data);
 }
 
@@ -214,6 +226,9 @@ const server = createServer(async (req, res) => {
 
   try{
     if(pathname.startsWith('/api/')){
+      // the browser asks permission before the real call; answer it and stop there
+      if(req.method === 'OPTIONS'){ res.writeHead(204, CORS); return res.end(); }
+
       if(req.method === 'POST' && pathname === '/api/register') return await register(req, res);
       if(req.method === 'POST' && pathname === '/api/login')    return await login(req, res);
       if(req.method === 'POST' && pathname === '/api/logout')   return logout(req, res);
