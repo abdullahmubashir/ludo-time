@@ -56,6 +56,9 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
   filter:drop-shadow(0 4px 0 rgba(0,0,0,.35)) drop-shadow(0 10px 22px rgba(0,0,0,.4));
 }
 .logo span{display:block}
+/* the inner screens wear the same logo a size or two down */
+.logo.sm{font-size:clamp(32px,9vw,44px)}
+.logo.xs{font-size:clamp(28px,8vw,38px)}
 .tag{color:#c6d4e2;font-size:12.5px;letter-spacing:.26em;text-transform:uppercase;
   margin:12px 0 20px;font-weight:600;text-align:center}
 .dicebar{display:flex;gap:10px;justify-content:center;margin-bottom:22px}
@@ -104,8 +107,12 @@ input::placeholder{color:#7d8fa4}
   border:1.5px solid rgba(255,255,255,.22);box-shadow:none}
 .btn-auth .lbl{flex:1;text-align:left}
 .auth-note{font-size:11.5px;color:#94a8bf;margin-top:14px;line-height:1.5;text-align:center}
-.avagrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.ava{aspect-ratio:1;border-radius:16px;font-size:25px;display:grid;place-items:center;
+/* Four across is right for a phone, but on a wider window a quarter of the panel makes a
+   tile the size of a playing card for a single emoji - and three rows of those push the
+   Continue button off the bottom. The tiles stop growing past a comfortable thumb. */
+.avagrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;justify-items:center}
+.ava{aspect-ratio:1;width:100%;max-width:74px;border-radius:16px;
+  font-size:clamp(20px,7vw,29px);display:grid;place-items:center;
   background:rgba(0,0,0,.24);border:2px solid transparent;transition:.15s}
 .ava.on{border-color:var(--gold);background:rgba(245,196,81,.2);transform:scale(1.05)}
 .prof{display:flex;align-items:center;gap:11px;margin-bottom:16px;
@@ -168,9 +175,133 @@ input::placeholder{color:#7d8fa4}
 .xpwrap{height:4px;border-radius:3px;background:rgba(255,255,255,.14);overflow:hidden;margin-bottom:2px;flex:none}
 .xpwrap i{display:block;height:100%;background:linear-gradient(90deg,#7ef0b0,var(--gold))}
 
-.hero-wrap{position:relative;margin:0 0 6px;flex:1;min-height:60px;
-  display:flex;flex-direction:column;justify-content:center}
-.hero{width:100%;flex:1;min-height:0;display:block}
+/* The die rolls in from beyond the right edge, so this keeps the coming and going tidy:
+   nothing can push the page sideways, and the die appears to arrive from off the board
+   rather than fading in where it lands. */
+.hero-wrap{position:relative;margin:0 0 6px;flex:1;min-height:60px;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;perspective:900px}
+.hero{position:relative;width:min(64%,222px);aspect-ratio:1;flex:none;
+  transform-style:preserve-3d;animation:boardSway 9s ease-in-out infinite}
+@keyframes boardSway{0%,100%{transform:rotateX(11deg) rotateZ(-1.2deg) translateY(0)}
+  50%{transform:rotateX(11deg) rotateZ(1.2deg) translateY(-8px)}}
+.hb{width:100%;height:100%;display:block;border-radius:5px;
+  box-shadow:0 22px 38px rgba(0,0,0,.55), 0 2px 0 rgba(255,255,255,.09) inset}
+
+/* every square arrives on its own beat, then the whole thing dissolves the same way */
+.hb rect,.hb circle,.hb polygon{transform-box:fill-box;transform-origin:center;
+  will-change:transform,opacity;
+  animation:squarePop 9s cubic-bezier(.18,1.35,.4,1) infinite backwards}
+@keyframes squarePop{
+  0%{opacity:0;transform:translateY(-16px) scale(.72)}
+  6%{opacity:1;transform:translateY(0) scale(1.09)}
+  10%,92%{opacity:1;transform:translateY(0) scale(1)}
+  100%{opacity:0;transform:translateY(10px) scale(.78)}}
+
+/* a band of light crosses the board the moment it finishes landing - it is a child that
+   slides, not a background that repaints, so it costs the same as moving anything else */
+.shine{position:absolute;inset:0;border-radius:5px;pointer-events:none;overflow:hidden}
+.shine::before{content:'';position:absolute;top:-25%;bottom:-25%;left:-60%;width:55%;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);
+  transform:translate3d(0,0,0) rotate(8deg);
+  animation:shineRun 9s cubic-bezier(.4,0,.2,1) infinite}
+@keyframes shineRun{0%,18%{transform:translate3d(0,0,0) rotate(8deg);opacity:0}
+  20%{opacity:1}
+  32%{transform:translate3d(340%,0,0) rotate(8deg);opacity:1}
+  35%,100%{transform:translate3d(340%,0,0) rotate(8deg);opacity:0}}
+
+/* four gotis drop into their own yards and settle */
+.goti{position:absolute;width:7.4%;aspect-ratio:1;border-radius:50% 50% 45% 45%;
+  transform:translate(-50%,-50%);will-change:transform,opacity;backface-visibility:hidden;
+  box-shadow:0 3px 7px rgba(0,0,0,.55), inset 0 -3px 5px rgba(0,0,0,.3),
+             inset 0 3px 4px rgba(255,255,255,.55);
+  animation:gotiLand 9s cubic-bezier(.3,1.1,.4,1) infinite backwards}
+.gA{left:10.67%;top:10.67%;background:#d21f26;animation-delay:1.75s}
+.gB{left:70.67%;top:10.67%;background:#0d8f42;animation-delay:1.9s}
+.gC{left:70.67%;top:70.67%;background:#e8a900;animation-delay:2.05s}
+.gD{left:10.67%;top:70.67%;background:#0f63c4;animation-delay:2.2s}
+@keyframes gotiLand{
+  0%{opacity:0;transform:translate(-50%,-50%) translateY(-64px) scale(.55)}
+  5%{opacity:1;transform:translate(-50%,-50%) translateY(0) scale(1)}
+  7%{transform:translate(-50%,-50%) translateY(0) scale(1.2,.76)}
+  10%{transform:translate(-50%,-50%) translateY(-9px) scale(.94,1.06)}
+  13%,86%{transform:translate(-50%,-50%) translateY(0) scale(1)}
+  95%,100%{opacity:0;transform:translate(-50%,-50%) translateY(-64px) scale(.55)}}
+
+/* and then one of them plays: out of the yard and down the track */
+.walker{position:absolute;width:7.4%;aspect-ratio:1;border-radius:50% 50% 45% 45%;
+  background:#d21f26;left:10.00%;top:43.33%;transform:translate(-50%,-50%);
+  will-change:transform,opacity;backface-visibility:hidden;
+  box-shadow:0 3px 7px rgba(0,0,0,.55), inset 0 -3px 5px rgba(0,0,0,.3),
+             inset 0 3px 4px rgba(255,255,255,.55);
+  animation:walk 9s cubic-bezier(.42,0,.58,1) infinite backwards,
+            walkFade 9s linear infinite backwards}
+@keyframes walk{
+0%,34.00%{transform:translate(-50%,-50%)}
+34.00%{transform:translate(-50%,-50%) translate(0.00%,0.00%)}
+35.56%{transform:translate(-50%,-50%) translate(18.02%,0.00%) translateY(-9px) scale(0.95,1.05)}
+38.33%{transform:translate(-50%,-50%) translate(45.05%,0.00%) translateY(-14px) scale(0.97,1.03)}
+41.11%{transform:translate(-50%,-50%) translate(84.68%,0.00%) translateY(-3px) scale(1.02,0.98)}
+41.80%{transform:translate(-50%,-50%) translate(90.09%,0.00%) scale(1.12,0.88)}
+42.67%{transform:translate(-50%,-50%) translate(90.09%,0.00%)}
+44.23%{transform:translate(-50%,-50%) translate(108.11%,0.00%) translateY(-9px) scale(0.95,1.05)}
+47.00%{transform:translate(-50%,-50%) translate(135.14%,0.00%) translateY(-14px) scale(0.97,1.03)}
+49.77%{transform:translate(-50%,-50%) translate(174.77%,0.00%) translateY(-3px) scale(1.02,0.98)}
+50.47%{transform:translate(-50%,-50%) translate(180.18%,0.00%) scale(1.12,0.88)}
+51.33%{transform:translate(-50%,-50%) translate(180.18%,0.00%)}
+52.89%{transform:translate(-50%,-50%) translate(198.20%,0.00%) translateY(-9px) scale(0.95,1.05)}
+55.67%{transform:translate(-50%,-50%) translate(225.23%,0.00%) translateY(-14px) scale(0.97,1.03)}
+58.44%{transform:translate(-50%,-50%) translate(264.86%,0.00%) translateY(-3px) scale(1.02,0.98)}
+59.13%{transform:translate(-50%,-50%) translate(270.27%,0.00%) scale(1.12,0.88)}
+60.00%{transform:translate(-50%,-50%) translate(270.27%,0.00%)}
+61.56%{transform:translate(-50%,-50%) translate(288.29%,0.00%) translateY(-9px) scale(0.95,1.05)}
+64.33%{transform:translate(-50%,-50%) translate(315.32%,0.00%) translateY(-14px) scale(0.97,1.03)}
+67.11%{transform:translate(-50%,-50%) translate(354.95%,0.00%) translateY(-3px) scale(1.02,0.98)}
+67.80%{transform:translate(-50%,-50%) translate(360.36%,0.00%) scale(1.12,0.88)}
+68.67%{transform:translate(-50%,-50%) translate(360.36%,0.00%)}
+70.23%{transform:translate(-50%,-50%) translate(378.38%,-18.02%) translateY(-9px) scale(0.95,1.05)}
+73.00%{transform:translate(-50%,-50%) translate(405.41%,-45.05%) translateY(-14px) scale(0.97,1.03)}
+75.77%{transform:translate(-50%,-50%) translate(445.05%,-84.68%) translateY(-3px) scale(1.02,0.98)}
+76.47%{transform:translate(-50%,-50%) translate(450.45%,-90.09%) scale(1.12,0.88)}
+77.33%{transform:translate(-50%,-50%) translate(450.45%,-90.09%)}
+78.89%{transform:translate(-50%,-50%) translate(450.45%,-108.11%) translateY(-9px) scale(0.95,1.05)}
+81.67%{transform:translate(-50%,-50%) translate(450.45%,-135.14%) translateY(-14px) scale(0.97,1.03)}
+84.44%{transform:translate(-50%,-50%) translate(450.45%,-174.77%) translateY(-3px) scale(1.02,0.98)}
+85.13%{transform:translate(-50%,-50%) translate(450.45%,-180.18%) scale(1.12,0.88)}
+86.00%{transform:translate(-50%,-50%) translate(450.45%,-180.18%)}
+86.00%,100%{transform:translate(-50%,-50%) translate(450.45%,-180.18%)}
+}
+@keyframes walkFade{0%,31%{opacity:0}33%,88%{opacity:1}93%,100%{opacity:0}}
+
+/* the die arrives last: in from the right edge, rolling, and comes to rest tucked into the
+   lower corner where it balances the board without sitting on top of it */
+/* No percentage padding here: a percentage padding is measured against the parent's width,
+   not the die's own, so on a small die it swallows the whole face and leaves the pips with
+   nothing. The three-by-three grid fills the die and each pip is sized against its own
+   square instead. */
+.hdie{position:absolute;right:-11%;bottom:3%;width:17%;aspect-ratio:1;border-radius:20%;
+  background:linear-gradient(150deg,#fdfcf7,#d9d2c2);
+  box-shadow:0 10px 18px rgba(0,0,0,.55), inset 0 2px 3px rgba(255,255,255,.85);
+  display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);
+  will-change:transform,opacity;backface-visibility:hidden;
+  animation:dieRollIn 9s cubic-bezier(.2,.9,.25,1) infinite backwards}
+.hdie i{width:56%;aspect-ratio:1;place-self:center;border-radius:50%;background:#241f19;
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.55)}
+/* a six: two columns of three, the way the face is always drawn */
+.hdie i:nth-child(1){grid-area:1/1}.hdie i:nth-child(2){grid-area:1/3}
+.hdie i:nth-child(3){grid-area:2/1}.hdie i:nth-child(4){grid-area:2/3}
+.hdie i:nth-child(5){grid-area:3/1}.hdie i:nth-child(6){grid-area:3/3}
+@keyframes dieRollIn{
+  0%,68%{opacity:0;transform:translate3d(230%,0,0) rotate(-300deg) scale(.5)}
+  72%{opacity:1}
+  84%{opacity:1;transform:translate3d(0,0,0) rotate(0deg) scale(1.06)}
+  87%{transform:translate3d(0,0,0) rotate(0deg) scale(1.13,.87)}
+  90%,94%{opacity:1;transform:translate3d(0,0,0) rotate(0deg) scale(1)}
+  100%{opacity:0;transform:translate3d(0,-16px,0) rotate(16deg) scale(.72)}}
+
+@media (prefers-reduced-motion:reduce){
+  .hero,.hb rect,.hb circle,.hb polygon,.shine,.goti,.walker,.hdie{animation:none}
+  .shine,.walker,.hdie{opacity:0}
+}
 #bigLogo{margin:0 0 -6px;flex:none;font-size:clamp(26px,8.5vw,50px);position:relative;z-index:2;
   display:flex;justify-content:center;gap:.01em;flex-wrap:wrap}
 #bigLogo b{display:inline-block;font-weight:700;animation:letterBob 2.6s ease-in-out infinite}
@@ -178,12 +309,6 @@ input::placeholder{color:#7d8fa4}
 @keyframes letterBob{0%,100%{transform:translateY(0) rotate(0)}
   50%{transform:translateY(-8px) rotate(-3deg)}}
 
-@keyframes breathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
-@keyframes diceIdle{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-2px) rotate(3deg)}}
-.h-person,.h-die{transform-box:fill-box;transform-origin:center}
-.h-person{animation:breathe 4.2s ease-in-out infinite}
-.h1{animation-delay:0s}.h2{animation-delay:1.05s}.h3{animation-delay:2.1s}.h4{animation-delay:3.15s}
-.h-die{animation:diceIdle 3.6s ease-in-out infinite}
 
 .big-btn{position:relative;overflow:hidden;width:100%;display:flex;align-items:center;gap:13px;
   flex:none;margin-bottom:8px;padding:clamp(9px,1.7vh,15px) 15px;border-radius:18px;text-align:left;
@@ -387,3 +512,23 @@ input::placeholder{color:#7d8fa4}
 .cf{position:absolute;width:9px;height:14px;animation:fall linear forwards}
 @keyframes fall{to{transform:translateY(105dvh) rotate(760deg)}}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.001s !important;transition-duration:.05s !important}}
+
+/* A short window - a laptop browser at half height, or a phone turned sideways - has the
+   same rhythm to fit into a good deal less room. Everything draws in a little rather than
+   handing the player a scrollbar. Last in the file, so it actually wins. */
+@media (max-height:680px){
+  .logo{font-size:clamp(24px,7.5vh,44px);margin-top:4px}
+  .logo.sm{font-size:clamp(22px,5.6vh,34px)}
+  .logo.xs{font-size:clamp(20px,5vh,30px)}
+  .tag{margin:7px 0 11px;font-size:11px}
+  .dicebar{margin-bottom:12px;gap:8px}
+  .pip-mini{width:29px;height:29px;font-size:16px}
+  .panel{padding:14px 15px;border-radius:19px;margin-top:12px}
+  .field{margin-bottom:11px}
+  .field-label{margin-bottom:5px}
+  .avagrid{gap:5px}
+  .ava{max-width:50px;border-radius:12px;font-size:clamp(17px,5vh,22px)}
+  .btn-auth{padding:11px 14px;margin-bottom:8px;font-size:15px}
+  .auth-note{margin-top:10px;font-size:10.5px}
+  .btn-play{padding:13px;font-size:16px}
+}
