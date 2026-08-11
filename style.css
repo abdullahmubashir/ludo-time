@@ -369,15 +369,17 @@ input::placeholder{color:#7d8fa4}
   background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#dff0e8}
 .icon-btn:hover{background:rgba(255,255,255,.2)}
 .icon-btn.off{opacity:.4}
-.players{display:grid;gap:6px;margin-bottom:8px;flex:none}
-.pcard{border-radius:14px;padding:7px 5px 6px;text-align:center;position:relative;overflow:hidden;
-  background:rgba(0,0,0,.28);border:1.5px solid rgba(255,255,255,.1);transition:.2s}
+/* These name the players; the board is what everyone is actually looking at. They keep
+   themselves small so it can have the room. */
+.players{display:grid;gap:5px;margin-bottom:6px;flex:none}
+.pcard{border-radius:11px;padding:4px 4px 5px;text-align:center;position:relative;overflow:hidden;
+  background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.1);transition:.2s}
 .pcard.turn{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.25);transform:translateY(-2px)}
 .pcard.out{opacity:.45}
-.pcard .dot{width:20px;height:20px;border-radius:50%;margin:0 auto 4px;
-  box-shadow:inset 0 -3px 4px rgba(0,0,0,.3)}
-.pcard .nm{font-size:11px;font-weight:600;color:#eaf6f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pcard .sc{font-size:9.5px;color:#a3b6c9;margin-top:1px}
+.pcard .dot{width:14px;height:14px;border-radius:50%;margin:0 auto 2px;
+  box-shadow:inset 0 -2px 3px rgba(0,0,0,.3)}
+.pcard .nm{font-size:10px;font-weight:600;color:#eaf6f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcard .sc{font-size:9px;color:#a3b6c9;margin-top:0}
 .pcard .timer{position:absolute;left:0;bottom:0;height:3px;background:var(--gold);width:0%}
 
 .board-stage{perspective:1600px;perspective-origin:50% 42%;
@@ -531,4 +533,32 @@ input::placeholder{color:#7d8fa4}
   .btn-auth{padding:11px 14px;margin-bottom:8px;font-size:15px}
   .auth-note{margin-top:10px;font-size:10.5px}
   .btn-play{padding:13px;font-size:16px}
+}
+
+/* ---------- give the board the room ----------
+   The board is the thing everyone is looking at, and on a short window it was losing to
+   the furniture around it - two rows of player cards above and a tall dock below left it
+   small enough that the gotis on it could not be told apart. The furniture shrinks first. */
+@media (max-height:760px){
+  .topbar{margin-bottom:5px}
+  .brand-sm{font-size:16px}
+  .players{gap:4px;margin-bottom:4px}
+  .pcard{padding:3px 3px 4px;border-radius:9px}
+  .pcard .dot{width:12px;height:12px;margin-bottom:1px}
+  .pcard .nm{font-size:9.5px}
+  .pcard .sc{font-size:8.5px}
+  .dockrow{margin-top:6px;padding:7px 10px;gap:9px;border-radius:16px}
+  /* the die is a real cube: shrink a face and the half-depth each one is pushed out by
+     has to shrink with it, or the six sides stop meeting at the corners */
+  .dice-stage{width:66px;height:66px}
+  .face{width:48px;height:48px;padding:8px}
+  .f1{transform:translateZ(24px)}
+  .f2{transform:rotateY(180deg) translateZ(24px)}
+  .f3{transform:rotateY(90deg)  translateZ(24px)}
+  .f4{transform:rotateY(-90deg) translateZ(24px)}
+  .f5{transform:rotateX(90deg)  translateZ(24px)}
+  .f6{transform:rotateX(-90deg) translateZ(24px)}
+  .turn-who{font-size:15px}
+  .turn-hint{font-size:11px;min-height:13px}
+  .roll-btn{padding:11px 16px;font-size:15px}
 }

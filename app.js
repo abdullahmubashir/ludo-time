@@ -177,11 +177,22 @@ function drawBoard(){
 }
 
 
-/* the board must stay square inside whatever space the screen leaves */
+/* Five or six players stacked into two rows of cards, which ate the height the board
+   needed and left the gotis too small to tell apart. Given the width for it they all sit
+   in one row instead, and the board takes what that gives back. */
+function cardColumns(){
+  const n = S ? S.players.length : 4;
+  if(n <= 4) return n;
+  return window.innerWidth >= 560 ? n : 3;
+}
+
+/* The board must stay square inside whatever space the screen leaves. The six-arm board
+   wears a frame that sits three pixels outside it, so the square is measured a little
+   smaller than the room available - otherwise the frame is what runs off the edge. */
 function fitBoard(){
   const stage = document.querySelector('.board-stage');
   if(!stage || !board) return;
-  const side = Math.floor(Math.min(stage.clientWidth, stage.clientHeight));
+  const side = Math.floor(Math.min(stage.clientWidth, stage.clientHeight)) - 8;
   if(side < 40) return;
   board.style.width  = side + 'px';
   board.style.height = side + 'px';
@@ -313,7 +324,7 @@ function newGame(count,mode,myName,len,names){
 
 function buildPlayerCards(){
   const wrap=el('players');
-  wrap.style.gridTemplateColumns = `repeat(${S.players.length>4?3:S.players.length}, 1fr)`;
+  wrap.style.gridTemplateColumns = `repeat(${cardColumns()}, 1fr)`;
   wrap.innerHTML='';
   S.players.forEach((pl,i)=>{
     const d=document.createElement('div');
@@ -366,7 +377,12 @@ function startTimer(){
     if(t>=LIMIT){ clearInterval(timerId); autoPlay(); }
   },100);
 }
-function stopTimer(){ clearInterval(timerId); const b=el('tm'+S.turnAt); if(b) b.style.width='0%'; }
+// called on the way out of a match, and once from a screen where no match ever started
+function stopTimer(){
+  clearInterval(timerId);
+  if(!S) return;
+  const b=el('tm'+S.turnAt); if(b) b.style.width='0%';
+}
 
 function autoPlay(){
   if(busy||S.over) return;
@@ -1357,7 +1373,12 @@ function toMenu(){
   showFace(1);
 })();
 
-function relayout(){ fitBoard(); if(S && !S.over) renderTokens(); }
+function relayout(){
+  const wrap = el('players');
+  if(wrap && S) wrap.style.gridTemplateColumns = `repeat(${cardColumns()}, 1fr)`;
+  fitBoard();
+  if(S && !S.over) renderTokens();
+}
 window.addEventListener('resize', relayout);
 window.addEventListener('orientationchange', ()=>setTimeout(relayout,250));
 
