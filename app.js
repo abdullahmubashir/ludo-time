@@ -765,11 +765,14 @@ const API_BASE = onWeb ? '' : SERVER_URL;
 
 let TOKEN = null, acctMode = 'login', serverUp = onWeb;
 
-// one quick knock at the door, so the buttons can tell the truth before anyone taps them
+/* One quick knock at the door, so the buttons can tell the truth before anyone taps them.
+   It gives up after three seconds: someone on a train with no signal is here to play the
+   computer, and they should not be made to watch a loading screen to find that out. */
 async function findServer(){
   if(onWeb) return true;
   try{
-    const r = await fetch(API_BASE + '/api/health', {method:'GET'});
+    const r = await fetch(API_BASE + '/api/health',
+                          {method:'GET', signal:AbortSignal.timeout(3000)});
     return r.ok;
   }catch(e){ return false; }
 }
