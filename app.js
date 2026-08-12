@@ -375,7 +375,9 @@ let timerId=null;
 function startTimer(){
   clearInterval(timerId);
   S.players.forEach((_,i)=>{const b=el('tm'+i); if(b) b.style.width='0%';});
-  if(cur().cpu) return;
+  // clearInterval stops the clock but leaves its number behind, which reads as still running
+  timerId = null;
+  if(cur().cpu || !RULES.turnTimer) return;
   const bar=el('tm'+S.turnAt); let t=0; const LIMIT=18000;
   timerId=setInterval(()=>{
     t+=100; bar.style.width=(t/LIMIT*100)+'%';
@@ -449,7 +451,7 @@ function rollDice(){
 function afterRoll(v){
   const p=cur();
   S.sixes = v===6 ? S.sixes+1 : 0;
-  if(S.sixes===3){
+  if(RULES.threeSixes && S.sixes===3){
     updateTurnUI('Three sixes — turn passes');
     beep(200,.3,'sawtooth',.14); S.sixes=0;
     setTimeout(nextTurn,900); return;
@@ -500,11 +502,18 @@ function pathClear(p,from,v){
   return true;
 }
 
+/* ========== HOUSE RULES ==========
+   Every table plays ludo slightly differently and everyone is certain their way is the
+   real one. All four are on by default, which is the game as most people learned it. */
+const RULES = { sixToLeave:true, threeSixes:true, exactFinish:true, turnTimer:true };
+
 function legalMoves(p,v){
   const out=[];
   p.tokens.forEach((pos,i)=>{
-    if(pos===-1){ if(v===6 && pathClear(p,-1,v)) out.push(i); return; }
+    if(pos===-1){ if((!RULES.sixToLeave || v===6) && pathClear(p,-1,v)) out.push(i); return; }
     if(pos===G.LAST) return;
+    // with the exact roll off, an overshoot walks the piece home instead of wasting the turn
+    if(pos+v>G.LAST && !RULES.exactFinish && pathClear(p,pos,G.LAST-pos)){ out.push(i); return; }
     if(pos+v<=G.LAST && pathClear(p,pos,v)) out.push(i);
   });
   return out;
@@ -534,11 +543,13 @@ async function doMove(p,ti){
   document.querySelector('.dice-stage').classList.remove('ready');
   const v=S.dice, from=p.tokens[ti];
   let extra = v===6;
+  // an overshoot only happens with the exact-roll rule off, and then it stops at home
+  const steps = from===-1 ? v : Math.min(v, G.LAST - from);
 
   if(from===-1){
     p.tokens[ti]=0; renderTokens(); hop(p.id,ti); sfx.step(); await wait(240);
   } else {
-    for(let s=1;s<=v;s++){
+    for(let s=1;s<=steps;s++){
       p.tokens[ti]=from+s;
       renderTokens(); hop(p.id,ti); sfx.step();
       await wait(140);
@@ -1397,7 +1408,11 @@ function relayout(){
 window.addEventListener('resize', relayout);
 window.addEventListener('orientationchange', ()=>setTimeout(relayout,250));
 
+el('setBtn').onclick = openSettings;
+
 function applyProfileSettings(){
+  // a player's own house rules travel with their profile
+  if(PROFILE && PROFILE.rules) Object.assign(RULES, PROFILE.rules);
   if(!PROFILE) return;
   PROFILE.theme = PROFILE.theme || 'classic';
   PROFILE.owned = PROFILE.owned || ['classic'];
@@ -1417,6 +1432,70 @@ function armMusic(){
   if(PROFILE.music && PROFILE.music!=='off') music.play(PROFILE.music);
 }
 document.addEventListener('pointerdown', armMusic, {once:false});
+
+/* ========== SETTINGS ==========
+   Board, voice and the four arguments every ludo table has. The rules follow the profile,
+   so a player's table stays their table on whatever phone they pick up. */
+
+const RULE_TEXT = [
+  ['sixToLeave' , 'Leave yard on a 6 only'],
+  ['threeSixes' , 'Three 6s forfeit turn'],
+  ['exactFinish', 'Exact roll to finish'],
+  ['turnTimer'  , 'Turn timer · auto-move on expiry']
+];
+
+function paintRules(){
+  const wrap = el('setRules');
+  wrap.innerHTML = '';
+  for(const [key, label] of RULE_TEXT){
+    const row = document.createElement('div');
+    row.className = 'rulerow';
+    row.innerHTML = `<span>${label}</span><i class="sw${RULES[key] ? ' on' : ''}"></i>`;
+    row.onclick = async () => {
+      RULES[key] = !RULES[key];
+      row.querySelector('.sw').classList.toggle('on', RULES[key]);
+      sfx.tap && sfx.tap();
+      if(PROFILE){ PROFILE.rules = {...RULES}; await saveProfile(); }
+    };
+    wrap.appendChild(row);
+  }
+}
+
+function paintSwatches(){
+  const wrap = el('setThemes');
+  wrap.innerHTML = '';
+  THEMES.forEach(t => {
+    const owned = !PROFILE || (PROFILE.owned || ['classic']).includes(t.id);
+    const b = document.createElement('button');
+    b.className = 'swatch' + (PROFILE && PROFILE.theme === t.id ? ' on' : '') + (owned ? '' : ' locked');
+    b.style.background = t.chip;
+    b.title = t.name + (owned ? '' : ` · ${t.price} coins`);
+    b.onclick = () => { owned ? pickTheme(t.id) : (renderShop(), el('shopModal').classList.add('show')); };
+    wrap.appendChild(b);
+  });
+}
+
+async function pickTheme(id){
+  if(!PROFILE) return;
+  PROFILE.theme = id; applyTheme(id); await saveProfile();
+  paintSwatches();
+}
+
+function openSettings(){
+  paintSwatches(); paintRules();
+  document.querySelectorAll('#segVoice button').forEach(b =>
+    b.classList.toggle('on', b.dataset.v === (PROFILE && PROFILE.voiceMode || 'ptt')));
+  el('setModal').classList.add('show');
+}
+
+document.querySelectorAll('#segVoice button').forEach(b => b.onclick = async () => {
+  document.querySelectorAll('#segVoice button').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  if(PROFILE){ PROFILE.voiceMode = b.dataset.v; await saveProfile(); }
+  // open mic means the line stays live; push-to-talk goes quiet the moment it is let go
+  if(VOICE.on) setMic(b.dataset.v === 'open');
+  el('pttBtn').style.display = (VOICE.on && b.dataset.v !== 'open') ? '' : 'none';
+});
 
 /* ========== FRIEND ROOM ==========
    A room is a code somebody reads out over WhatsApp. The server keeps the seats and the

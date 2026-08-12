@@ -107,6 +107,7 @@
   </button>
 
   <div class="tray">
+    <button class="tray-btn" id="setBtn">⚙️<span>Settings</span></button>
     <button class="tray-btn" id="shopBtn">🎨<span>Themes</span></button>
     <button class="tray-btn" id="musicBtn">🎵<span>Music</span></button>
     <button class="tray-btn" id="howBtn">❔<span>Rules</span></button>
@@ -284,6 +285,28 @@
   <div class="standings" id="resList"></div>
   <button class="btn-play" id="againBtn">Play again</button>
   <button class="btn-ghost" id="homeBtn">Back to menu</button>
+</div></div>
+
+<!-- ===== SETTINGS ===== -->
+<div class="overlay" id="setModal"><div class="modal">
+  <h2>Settings</h2>
+
+  <p class="field-label">BOARD</p>
+  <div class="swatches" id="setThemes"></div>
+
+  <p class="field-label" style="margin-top:16px">VOICE CHAT</p>
+  <div class="seg" id="segVoice">
+    <button data-v="ptt" class="on">Push-to-talk</button>
+    <button data-v="open">Open mic</button>
+  </div>
+  <p class="auth-note" style="text-align:left;margin-top:8px">
+    Mic starts off, speaker on. Echo cancellation and noise suppression are asked of the
+    browser. Friend rooms: voice on; strangers: opt in per match.</p>
+
+  <p class="field-label" style="margin-top:16px">HOUSE RULES</p>
+  <div class="rules" id="setRules"></div>
+
+  <button class="btn-ghost" data-close style="margin-top:16px">Done</button>
 </div></div>
 
 <!-- ===== ASK (the game's own yes/no, never the browser's) ===== -->
