@@ -743,3 +743,48 @@ input::placeholder{color:#6f688a}
 /* the microphone follows the match onto the board */
 .icon-btn.mic.hot{background:#123028;color:#4fd6a5;border-color:rgba(79,214,165,.45);
   box-shadow:0 0 14px rgba(79,214,165,.3)}
+
+/* ============================================================================
+   THE DIE, REDRAWN FROM THE DESIGNER'S PIECE
+   Corners rounded almost to a squircle, a face that lifts towards the top-left,
+   a warm lip along the bottom that gives it thickness, and pips in the same
+   indigo the game is played on. Drawn rather than pasted, because a picture
+   shows one number and this thing has to show six and tumble between them.
+   ========================================================================== */
+
+.face{
+  border-radius:23%;
+  padding:13%;
+  background:linear-gradient(157deg,#fdfbf7 0%,#f7f3ec 46%,#ece5d9 100%);
+  box-shadow:
+    0 0 0 1px rgba(120,106,84,.13),
+    inset 0 -9% 14% rgba(150,132,102,.2),        /* the lip along the bottom */
+    inset 0 5% 9% rgba(255,255,255,.95);
+  overflow:visible;
+}
+/* the old inner plate is what made it read as a square block with a tile on it */
+.face::before{content:none}
+
+.face i{
+  width:100%;height:auto;aspect-ratio:1;border-radius:50%;
+  place-self:center;
+  background:radial-gradient(circle at 34% 26%, #32294f 0%, #241f3d 42%, #1a1630 100%);
+  box-shadow:
+    inset 0 1.5px 2px rgba(255,255,255,.16),
+    inset 0 -1.5px 2px rgba(0,0,0,.55),
+    0 1px 1px rgba(255,255,255,.7);
+}
+/* the pips fill their third of the face, the way they do on the real one */
+.face{gap:6%}
+
+/* the sides step down in light so the number facing you is the one you read */
+.f3,.f4{background:linear-gradient(157deg,#efe9df 0%,#e3dbcd 50%,#d2c9b8 100%)}
+.f5,.f6{background:linear-gradient(157deg,#f6f2ea 0%,#eae3d7 50%,#dad2c2 100%)}
+
+/* the shadow it sits in */
+.dshadow{background:rgba(20,17,34,.4);filter:blur(4px);height:9px}
+
+/* the little dice on the sign-in screen wear the same face */
+.pip-mini{background:linear-gradient(157deg,#fdfbf7,#ece5d9);border-radius:26%;
+  box-shadow:0 3px 0 rgba(20,17,34,.28), inset 0 -3px 5px rgba(150,132,102,.16),
+             inset 0 3px 4px rgba(255,255,255,.9)}
