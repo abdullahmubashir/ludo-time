@@ -91,6 +91,11 @@
     </div>
   </div>
 
+  <button class="big-btn online" id="roomBtn">
+    <span class="bi">🌐</span>
+    <span class="bt">FRIEND ROOM<br><small>play online</small></span>
+  </button>
+
   <button class="big-btn cpu" id="cpuBtn">
     <span class="bi">🤖</span>
     <span class="bt">VS<br>COMPUTER</span>
@@ -112,6 +117,59 @@
     <button id="acctLinkBtn">Save progress to an account</button>
     <button id="linkGoogleBtn">Link Google account</button>
     <button id="signOutBtn">Sign out</button>
+  </div>
+</div>
+
+<!-- ===== FRIEND ROOM ===== -->
+<div class="screen" id="room">
+  <!-- first: make one, or go to someone else's -->
+  <div id="roomPick">
+    <h1 class="logo sm"><span>FRIEND</span><span>ROOM</span></h1>
+    <div class="panel" style="margin-top:20px">
+      <button class="btn-play" id="roomMakeBtn">CREATE A ROOM</button>
+      <p class="auth-note">You get a four-letter code. Share it and they are in.</p>
+      <div class="field" style="margin-top:14px">
+        <label class="field-label">Have a code?</label>
+        <input type="text" id="roomCodeIn" maxlength="4" autocapitalize="characters"
+               autocomplete="off" spellcheck="false" placeholder="ABCD"
+               style="text-transform:uppercase;letter-spacing:.34em;text-align:center;font-size:24px">
+      </div>
+      <button class="btn-ghost" id="roomJoinBtn">JOIN THAT ROOM</button>
+      <p class="hintline" id="roomPickMsg" style="margin:12px 0 0;text-align:center"></p>
+      <button class="btn-ghost" id="roomBackBtn">Back</button>
+    </div>
+  </div>
+
+  <!-- then: the room itself -->
+  <div id="roomLobby" style="display:none">
+    <p class="field-label" style="text-align:center;margin-bottom:4px">PRIVATE ROOM</p>
+    <div class="roomcode-big" id="roomCodeBig">————</div>
+    <p class="tag" style="margin:6px 0 16px">Share the code — friends join instantly.</p>
+
+    <div class="share-row">
+      <button class="btn-share wa" id="roomWaBtn">Share on WhatsApp</button>
+      <button class="btn-share cp" id="roomCopyBtn">Copy code</button>
+    </div>
+
+    <p class="field-label" style="margin:18px 0 7px">SEATS <span id="roomSeatCount">1/6</span></p>
+    <div class="seatlist" id="roomSeats"></div>
+
+    <div class="field" style="margin-top:16px">
+      <label class="field-label">Match length</label>
+      <div class="seg" id="segLenRoom">
+        <button data-v="quick">Blitz · 2 pieces</button>
+        <button data-v="full" class="on">Classic · full game</button>
+      </div>
+    </div>
+
+    <div class="voice-row">
+      <button class="btn-voice" id="voiceBtn"><span class="vi">🎙</span><span id="voiceLbl">Join voice</span></button>
+      <button class="btn-voice ptt" id="pttBtn" style="display:none">Hold to talk</button>
+    </div>
+
+    <button class="btn-play" id="roomStartBtn" style="margin-top:14px">START GAME</button>
+    <p class="hintline" id="roomMsg" style="margin:10px 0 0;text-align:center"></p>
+    <button class="btn-ghost" id="roomLeaveBtn">Leave room</button>
   </div>
 </div>
 

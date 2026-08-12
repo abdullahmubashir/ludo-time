@@ -342,17 +342,22 @@ const esc = s => String(s).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp
 const cur = () => S.players[S.turnAt];
 
 // every seat that is not the computer belongs to somebody sitting right here
+/* Alone or round one phone, every seat that is not the computer belongs to whoever is
+   holding it. In a room, only one of them is yours. */
 function myTurn(){
   if(!S || S.over) return false;
+  if(ROOM.playing) return S.turnAt === ROOM.mySeat;
   return !cur().cpu;
 }
+const amHost = () => !ROOM.playing || ROOM.host === ROOM.playerId;
 
 function startTurn(){
-  if(S.over) return;
+  if(S.over || !amHost()) return;
   S.rolled=false; S.dice=0;
   updateTurnUI(); highlight([]);
   el('rollBtn').disabled = !myTurn();
   document.querySelector('.dice-stage').classList.toggle('ready', myTurn());
+  pushRoomState();
   startTimer();
   if(cur().cpu) setTimeout(rollDice,750);
 }
@@ -420,6 +425,12 @@ function showFace(v,animate){
 
 function rollDice(){
   if(S && S.over) return;
+  if(ROOM.playing && !myTurn()) return;
+  // in a room only the host throws; everyone else asks, and draws what comes back
+  if(ROOM.playing && !amHost()){
+    if(S.rolled) return;
+    el('rollBtn').disabled = true; askHost({t:'roll'}); return;
+  }
   if(busy||S.rolled) return;
   busy=true; stopTimer(); el('rollBtn').disabled=true;
   const st=document.querySelector('.dice-stage');
@@ -461,6 +472,7 @@ function sameSeat(){
   S.rolled=false; S.dice=0;
   el('rollBtn').disabled = !myTurn();
   document.querySelector('.dice-stage').classList.toggle('ready', myTurn());
+  pushRoomState();
   updateTurnUI(cur().cpu?'Thinking…':'Roll again');
   startTimer();
   if(cur().cpu) setTimeout(rollDice,650);
@@ -512,6 +524,7 @@ function onTokenTap(pid,ti){
   const p=cur();
   if(p.id!==pid || !S.rolled || !myTurn()) return;
   if(!legalMoves(p,S.dice).includes(ti)) return;
+  if(ROOM.playing && !amHost()){ highlight([]); clearTargets(); askHost({t:'move',ti}); return; }
   if(busy) return;
   doMove(p,ti);
 }
@@ -572,7 +585,7 @@ async function doMove(p,ti){
     busy=false; S.sixes=0; nextTurn(); return;
   }
 
-  busy=false;
+  busy=false; pushRoomState();
   if(extra) sameSeat(); else { S.sixes=0; nextTurn(); }
 }
 
@@ -633,7 +646,8 @@ function pickCPU(p,moves,v){
 const ORD=['','1st','2nd','3rd','4th','5th','6th'];
 
 async function finish(){
-  S.over=true; busy=false; stopTimer(); highlight([]); clearTargets();
+  S.over=true; busy=false; stopTimer(); pushRoomState(); highlight([]); clearTargets();
+  if(ROOM.playing) return showRoomResult();
   const me = S.players[0];
   const won = me.rank===1;
   if(won) confetti();
@@ -1403,6 +1417,359 @@ function armMusic(){
   if(PROFILE.music && PROFILE.music!=='off') music.play(PROFILE.music);
 }
 document.addEventListener('pointerdown', armMusic, {once:false});
+
+/* ========== FRIEND ROOM ==========
+   A room is a code somebody reads out over WhatsApp. The server keeps the seats and the
+   line stays open the whole time, so a friend appearing shows up here without asking.
+
+   One copy runs the rules - the host's - and tells the others what the board looks like
+   after every change. The others send what they want to do and draw what comes back, so
+   there is only ever one story about where the pieces are. */
+
+const ROOM = { code:null, playerId:null, host:null, seats:[], mySeat:0,
+               playing:false, stream:null, len:'full' };
+
+const roomSay  = m => el('roomMsg').textContent = m || '';
+const pickSay  = m => el('roomPickMsg').textContent = m || '';
+
+async function roomApi(what, body){
+  const r = await fetch(API_BASE + '/api/room/' + what, {
+    method:'POST', headers:{'content-type':'application/json'},
+    body: JSON.stringify(body)
+  }).catch(() => null);
+  if(!r) throw new Error('Could not reach the server.');
+  const data = await r.json().catch(() => ({}));
+  if(!r.ok) throw new Error(data.error || 'Something went wrong.');
+  return data;
+}
+
+function paintSeats(){
+  const wrap = el('roomSeats');
+  wrap.innerHTML = '';
+  ROOM.seats.forEach((s,i) => {
+    const row = document.createElement('div');
+    row.className = 'seatrow' + (s.id === ROOM.playerId ? ' me' : '');
+    row.innerHTML =
+      `<i class="sdot" style="background:var(${CVAR[i]})"></i>` +
+      `<span class="snm">${s.id === ROOM.playerId ? 'You' : (s.name || 'Player')}</span>` +
+      `<span class="stag">${s.id === ROOM.host ? 'Host' : (s.here ? 'Joined' : 'Away')}</span>`;
+    wrap.appendChild(row);
+  });
+  el('roomSeatCount').textContent = ROOM.seats.length + '/6';
+  el('roomCodeBig').textContent = ROOM.code || '————';
+  ROOM.mySeat = Math.max(0, ROOM.seats.findIndex(s => s.id === ROOM.playerId));
+
+  const host = ROOM.host === ROOM.playerId;
+  el('roomStartBtn').style.display = host ? '' : 'none';
+  if(!host) roomSay('Waiting for the host to start…');
+  else if(ROOM.seats.length < 2) roomSay('Share the code — you need one more.');
+  else roomSay('');
+}
+
+function showRoomLobby(){
+  el('roomPick').style.display = 'none';
+  el('roomLobby').style.display = '';
+  paintSeats();
+}
+
+/* the open line: everything the room does arrives here */
+function openStream(){
+  if(ROOM.stream) ROOM.stream.close();
+  const src = new EventSource(`${API_BASE}/api/room/stream?code=${ROOM.code}&playerId=${ROOM.playerId}`);
+  ROOM.stream = src;
+
+  src.addEventListener('hello', e => { Object.assign(ROOM, JSON.parse(e.data)); paintSeats(); });
+  src.addEventListener('seats', e => { Object.assign(ROOM, JSON.parse(e.data)); paintSeats(); });
+  src.addEventListener('left',  e => { const {id} = JSON.parse(e.data); dropVoice(id); });
+
+  src.addEventListener('start', e => {
+    const deal = JSON.parse(e.data);
+    ROOM.playing = true;
+    ROOM.seats = deal.seats.map(s => ({...s, here:true}));
+    ROOM.mySeat = Math.max(0, ROOM.seats.findIndex(s => s.id === ROOM.playerId));
+    shownOnline = false;
+    newGame(deal.count, 'online', PROFILE.name, deal.len, deal.seats.map(s => s.name));
+  });
+
+  // a guest draws whatever the host says the board looks like
+  src.addEventListener('state', e => applyRoomState(JSON.parse(e.data)));
+
+  // the host hears what everyone else wants to do
+  src.addEventListener('intent', e => {
+    if(!amHost() || !S || S.over) return;
+    const { from, intent } = JSON.parse(e.data);
+    const seat = ROOM.seats.findIndex(s => s.id === from);
+    if(seat < 0 || seat !== S.turnAt) return;
+    if(intent.t === 'roll' && !S.rolled) rollDice();
+    if(intent.t === 'move' && S.rolled &&
+       legalMoves(S.players[seat], S.dice).includes(intent.ti)) doMove(S.players[seat], intent.ti);
+  });
+
+  src.addEventListener('signal', e => onVoiceSignal(JSON.parse(e.data)));
+  src.addEventListener('voice',  e => { const {id,on} = JSON.parse(e.data); markVoice(id,on); });
+
+  src.onerror = () => { if(ROOM.code) roomSay('Connection dropped — trying again…'); };
+}
+
+function leaveRoom(){
+  stopVoice();
+  if(ROOM.stream){ ROOM.stream.close(); ROOM.stream = null; }
+  if(ROOM.code) roomApi('leave', { code:ROOM.code, playerId:ROOM.playerId }).catch(()=>{});
+  ROOM.code = ROOM.playerId = null; ROOM.seats = []; ROOM.playing = false;
+}
+
+/* ---------- the board, kept in step ---------- */
+
+let shownOnline = false, lastShownDice = 0;
+
+function snapshot(){
+  return { tk:S.players.map(p => p.tokens.slice()), rk:S.players.map(p => p.rank),
+           turnAt:S.turnAt, dice:S.dice, rolled:S.rolled, over:S.over, sixes:S.sixes };
+}
+function pushRoomState(){
+  if(!ROOM.playing || !amHost() || !S) return;
+  roomApi('state', { code:ROOM.code, playerId:ROOM.playerId, state:snapshot() }).catch(()=>{});
+}
+function askHost(intent){
+  roomApi('intent', { code:ROOM.code, playerId:ROOM.playerId, intent }).catch(()=>{});
+}
+
+function applyRoomState(x){
+  if(!S) return;
+  x.tk.forEach((t,i) => { if(S.players[i]) S.players[i].tokens = t; });
+  x.rk.forEach((r,i) => { if(S.players[i]) S.players[i].rank = r; });
+  S.turnAt = x.turnAt; S.rolled = x.rolled; S.over = x.over; S.sixes = x.sixes;
+
+  if(x.dice && x.dice !== lastShownDice){          // a fresh roll: let it tumble
+    lastShownDice = x.dice;
+    const st = document.querySelector('.dice-stage');
+    st.classList.remove('throw'); void st.offsetWidth; st.classList.add('throw');
+    showFace(x.dice, true); sfx.roll(); setTimeout(() => sfx.land(), 980);
+    setTimeout(() => st.classList.remove('throw'), 1250);
+  }
+  S.dice = x.dice;
+  if(!x.rolled) lastShownDice = 0;
+
+  renderTokens(); paintCards();
+  S.players.forEach((_,i) => el('pc'+i).classList.toggle('turn', i === S.turnAt));
+  const p = cur();
+  el('turnWho').textContent = myTurn() ? 'Your turn' : p.name + "'s turn";
+  el('turnWho').style.color = `var(${CVAR[p.id]}l)`;
+  el('rollBtn').disabled = !myTurn() || S.rolled;
+  document.querySelector('.dice-stage').classList.toggle('ready', myTurn() && !S.rolled);
+
+  if(myTurn() && S.rolled){
+    const mv = legalMoves(p, S.dice);
+    el('turnHint').textContent = mv.length ? 'Pick a goti' : 'No move';
+    highlight(mv.map(ti => [p.id, ti])); showTargets(p, mv);
+  }else{
+    el('turnHint').textContent = myTurn() ? 'Tap ROLL' : 'Waiting…';
+    highlight([]); clearTargets();
+  }
+  if(S.over) showRoomResult();
+}
+
+async function showRoomResult(){
+  if(shownOnline) return; shownOnline = true;
+  stopTimer(); busy = false;
+  const me = S.players[ROOM.mySeat];
+  const won = me && me.rank === 1;
+  if(won) confetti();
+  sfx.win();
+  el('resEmoji').textContent = won ? '🏆' : '🎲';
+  el('resName').textContent  = won ? 'You win!' : 'Match over';
+  const got = await reward(won);
+  el('resSub').textContent = (me && me.rank ? `You finished #${me.rank}. ` : '') + `+${got} coins`;
+  setTimeout(() => el('resultModal').classList.add('show'), 700);
+}
+
+/* ========== VOICE ==========
+   Nobody's voice goes through the server. Each pair of browsers opens its own line and
+   talks straight across it; the server only carries the notes they need to find each
+   other. With a roomful that means one line per person, which is fine at six.
+
+   The mic starts muted and stays muted until it is held down. A game people play in the
+   evening should not be a microphone somebody forgot was on. */
+
+const VOICE = { on:false, mic:null, open:false, peers:new Map(), talking:new Set() };
+
+const ICE = { iceServers:[{ urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302'] }] };
+
+function paintVoice(){
+  el('voiceLbl').textContent = VOICE.on ? 'Leave voice' : 'Join voice';
+  el('voiceBtn').classList.toggle('live', VOICE.on);
+  el('pttBtn').style.display = VOICE.on ? '' : 'none';
+}
+
+function setMic(open){
+  VOICE.open = open;
+  if(VOICE.mic) VOICE.mic.getAudioTracks().forEach(t => t.enabled = open);
+  el('pttBtn').classList.toggle('hot', open);
+  el('pttBtn').textContent = open ? 'Talking…' : 'Hold to talk';
+  if(ROOM.code) roomApi('voice', { code:ROOM.code, playerId:ROOM.playerId, on:open }).catch(()=>{});
+}
+
+// one line per other person in the room
+function peerFor(id){
+  if(VOICE.peers.has(id)) return VOICE.peers.get(id);
+
+  const pc = new RTCPeerConnection(ICE);
+  if(VOICE.mic) VOICE.mic.getTracks().forEach(t => pc.addTrack(t, VOICE.mic));
+
+  pc.onicecandidate = e => {
+    if(e.candidate) roomApi('signal', { code:ROOM.code, playerId:ROOM.playerId,
+                                        to:id, data:{ ice:e.candidate } }).catch(()=>{});
+  };
+  pc.ontrack = e => {
+    let a = document.getElementById('voice-' + id);
+    if(!a){
+      a = document.createElement('audio');
+      a.id = 'voice-' + id; a.autoplay = true; a.playsInline = true;
+      document.body.appendChild(a);
+    }
+    a.srcObject = e.streams[0];
+  };
+  VOICE.peers.set(id, pc);
+  return pc;
+}
+
+async function callPeer(id){
+  const pc = peerFor(id);
+  const offer = await pc.createOffer({ offerToReceiveAudio:true });
+  await pc.setLocalDescription(offer);
+  roomApi('signal', { code:ROOM.code, playerId:ROOM.playerId, to:id,
+                      data:{ sdp:pc.localDescription } }).catch(()=>{});
+}
+
+async function onVoiceSignal({ from, data }){
+  if(!VOICE.on) return;
+  const pc = peerFor(from);
+  try{
+    if(data.sdp){
+      await pc.setRemoteDescription(data.sdp);
+      if(data.sdp.type === 'offer'){
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        roomApi('signal', { code:ROOM.code, playerId:ROOM.playerId, to:from,
+                            data:{ sdp:pc.localDescription } }).catch(()=>{});
+      }
+    }else if(data.ice){
+      await pc.addIceCandidate(data.ice);
+    }
+  }catch(e){ /* a late candidate for a line already closed */ }
+}
+
+function markVoice(id, on){
+  on ? VOICE.talking.add(id) : VOICE.talking.delete(id);
+  const row = [...el('roomSeats').children][ROOM.seats.findIndex(s => s.id === id)];
+  if(row) row.classList.toggle('talking', on);
+}
+
+function dropVoice(id){
+  const pc = VOICE.peers.get(id);
+  if(pc){ try{ pc.close(); }catch(e){} VOICE.peers.delete(id); }
+  const a = document.getElementById('voice-' + id);
+  if(a) a.remove();
+}
+
+function stopVoice(){
+  VOICE.on = false;
+  for(const id of [...VOICE.peers.keys()]) dropVoice(id);
+  if(VOICE.mic){ VOICE.mic.getTracks().forEach(t => t.stop()); VOICE.mic = null; }
+  paintVoice();
+}
+
+async function startVoice(){
+  // the browser hands out a microphone on an https address or on this machine, nowhere else
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    roomSay('This browser will not share a microphone here.'); return;
+  }
+  try{
+    VOICE.mic = await navigator.mediaDevices.getUserMedia({
+      audio:{ echoCancellation:true, noiseSuppression:true, autoGainControl:true }, video:false });
+  }catch(e){
+    roomSay(e.name === 'NotAllowedError' ? 'Microphone was refused.'
+                                         : 'No microphone available on this address.');
+    return;
+  }
+  VOICE.on = true;
+  setMic(false);                                   // muted until held
+  paintVoice();
+  // the lower id calls, so two people never ring each other at once
+  for(const s of ROOM.seats)
+    if(s.id !== ROOM.playerId && ROOM.playerId < s.id) callPeer(s.id);
+    else if(s.id !== ROOM.playerId) peerFor(s.id);
+}
+
+el('voiceBtn').onclick = () => VOICE.on ? stopVoice() : startVoice();
+
+// held down to talk, in the three ways a person might hold it
+const ptt = el('pttBtn');
+ptt.onmousedown  = () => setMic(true);
+ptt.onmouseup    = () => setMic(false);
+ptt.onmouseleave = () => setMic(false);
+ptt.ontouchstart = e => { e.preventDefault(); setMic(true); };
+ptt.ontouchend   = e => { e.preventDefault(); setMic(false); };
+document.addEventListener('keydown', e => { if(e.code==='Space' && VOICE.on && !e.repeat && !/INPUT/.test(document.activeElement.tagName)){ e.preventDefault(); setMic(true); } });
+document.addEventListener('keyup',   e => { if(e.code==='Space' && VOICE.on){ e.preventDefault(); setMic(false); } });
+
+/* ---------- the buttons ---------- */
+
+el('roomBtn').onclick = () => {
+  if(!serverUp){ toast('Friend rooms need the server running.'); return; }
+  el('roomPick').style.display = '';
+  el('roomLobby').style.display = 'none';
+  el('roomCodeIn').value = ''; pickSay('');
+  show('room');
+};
+el('roomBackBtn').onclick = () => show('home');
+
+el('roomMakeBtn').onclick = async () => {
+  pickSay('Making a room…');
+  try{
+    const r = await roomApi('create', { name:PROFILE.name, avatar:PROFILE.avatar, len:'full' });
+    ROOM.playerId = r.playerId; Object.assign(ROOM, r.room);
+    showRoomLobby(); openStream();
+  }catch(e){ pickSay(e.message); }
+};
+
+el('roomJoinBtn').onclick = async () => {
+  const code = el('roomCodeIn').value.trim().toUpperCase();
+  if(code.length !== 4){ pickSay('The code is four letters.'); return; }
+  pickSay('Looking for that room…');
+  try{
+    const r = await roomApi('join', { code, name:PROFILE.name, avatar:PROFILE.avatar });
+    ROOM.playerId = r.playerId; Object.assign(ROOM, r.room);
+    showRoomLobby(); openStream();
+  }catch(e){ pickSay(e.message); }
+};
+el('roomCodeIn').onkeydown = e => { if(e.key === 'Enter') el('roomJoinBtn').click(); };
+
+el('roomCopyBtn').onclick = async () => {
+  try{ await navigator.clipboard.writeText(ROOM.code); toast('Code copied'); }
+  catch(e){ toast('Code: ' + ROOM.code); }
+};
+el('roomWaBtn').onclick = () => {
+  const msg = `Come play Ludo Time with me — room code ${ROOM.code}`;
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+};
+
+document.querySelectorAll('#segLenRoom button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#segLenRoom button').forEach(x => x.classList.remove('on'));
+  b.classList.add('on'); ROOM.len = b.dataset.v;
+});
+
+el('roomStartBtn').onclick = async () => {
+  try{
+    await roomApi('start', { code:ROOM.code, playerId:ROOM.playerId,
+                             count:ROOM.seats.length, len:ROOM.len });
+  }catch(e){ roomSay(e.message); }
+};
+
+el('roomLeaveBtn').onclick = async () => {
+  if(!await ask('Leave this room?','The others carry on without you.','Leave','Stay','🚪')) return;
+  leaveRoom(); show('home');
+};
 
 (async function boot(){
   TOKEN   = await store.get(TOKEN_KEY);

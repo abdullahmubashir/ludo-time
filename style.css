@@ -684,3 +684,36 @@ input::placeholder{color:#6f688a}
 .hub{filter:drop-shadow(0 3px 7px rgba(0,0,0,.42))}
 .hub .tri{box-shadow:0 0 0 1px rgba(255,255,255,.45) inset}
 .token{filter:drop-shadow(0 3px 3px rgba(0,0,0,.45))}
+
+/* ---------- the friend room ---------- */
+#room.active{justify-content:center;overflow-y:auto}
+.roomcode-big{font-family:var(--display);font-weight:700;
+  font-size:clamp(38px,13vw,58px);letter-spacing:.16em;text-align:center;color:var(--gold);
+  text-shadow:0 3px 0 rgba(0,0,0,.35);line-height:1.05}
+.share-row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.btn-share{padding:13px 10px;border-radius:13px;font-weight:600;font-size:14.5px;
+  border:1px solid var(--hair);transition:.15s}
+.btn-share.wa{background:#123028;color:#4fd6a5;border-color:rgba(79,214,165,.28)}
+.btn-share.wa:hover{background:#17402f}
+.btn-share.cp{background:#3a2d12;color:var(--gold);border-color:rgba(228,163,43,.3)}
+.btn-share.cp:hover{background:#4a3917}
+
+.seatlist{display:flex;flex-direction:column;gap:7px}
+.seatrow{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:12px;
+  background:var(--panel-2);border:1px solid var(--hair);transition:.2s}
+.seatrow.me{border-color:rgba(228,163,43,.35)}
+.seatrow.talking{border-color:#4fd6a5;box-shadow:0 0 0 1px #4fd6a5,0 0 16px rgba(79,214,165,.3)}
+.seatrow .sdot{width:14px;height:14px;border-radius:4px;flex:none;
+  box-shadow:inset 0 -2px 3px rgba(0,0,0,.3)}
+.seatrow .snm{flex:1;font-weight:600;font-size:14.5px;color:var(--text)}
+.seatrow .stag{font-size:11.5px;color:var(--muted)}
+
+.voice-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
+.btn-voice{padding:12px 10px;border-radius:13px;font-weight:600;font-size:14px;
+  background:var(--panel-2);border:1px solid var(--hair);color:var(--muted-2);
+  display:flex;align-items:center;justify-content:center;gap:7px;transition:.15s}
+.btn-voice:hover{background:#332b52;color:var(--text)}
+.btn-voice.live{background:#123028;color:#4fd6a5;border-color:rgba(79,214,165,.35)}
+.btn-voice.ptt{user-select:none;-webkit-user-select:none;touch-action:none}
+.btn-voice.ptt.hot{background:#4fd6a5;color:#08281d;border-color:#4fd6a5;
+  box-shadow:0 0 18px rgba(79,214,165,.4)}
