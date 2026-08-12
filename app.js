@@ -128,6 +128,23 @@ function drawBoard(){
     board.appendChild(s);
   }));
 
+  /* Every colour keeps its own die in the middle of its own yard, the way it sits on a
+     real table. Whose turn it is stops being something you read and becomes something you
+     see: their die is the one lit up, and it is the one that answers a tap. */
+  G.yards.forEach((y,a)=>{
+    const seat = S ? S.players.findIndex(p => p.id === a) : -1;
+    if(seat < 0) return;
+    const d = document.createElement('div');
+    d.className = 'ydie'; d.id = 'yd' + seat; d.dataset.seat = seat;
+    at(d, {x:y.cx, y:y.cy}, G.yardSize * 0.25);   // big enough to read, small enough to
+                                                  // leave the four resting spots alone
+    // the yard is turned to face its arm; the die stays the right way up regardless
+    d.style.transform = `rotate(${-y.rot}deg)`;
+    for(let i=0;i<9;i++) d.appendChild(document.createElement('span'));
+    d.onclick = () => { if(seat === S.turnAt) rollDice(); };
+    board.appendChild(d);
+  });
+
   // home lanes: flat player colour
   G.homes.forEach((lane,a)=>lane.forEach(p=>{
     const d=document.createElement('div'); d.className='cell';
@@ -312,11 +329,11 @@ function newGame(count,mode,myName,len,names){
       name: names ? (names[i] || 'Player '+(i+1))
                   : (i===0 ? myName : (mode==='cpu' ? CNAME[p]+' Bot' : 'Player '+(i+1))),
       cpu: mode==='cpu' && i>0,
-      tokens:new Array(tok).fill(-1), done:0, rank:0
+      tokens:new Array(tok).fill(-1), done:0, rank:0, roll:0
     }))
   };
   show('game');
-  drawBoard(); buildPlayerCards(); createTokens();
+  drawBoard(); buildPlayerCards(); createTokens(); paintYardDice();
   fitBoard();
   requestAnimationFrame(()=>{ fitBoard(); renderTokens(); });
   setTimeout(startTurn,600);
@@ -337,6 +354,27 @@ function buildPlayerCards(){
   });
 }
 const esc = s => String(s).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+
+const PIP_AT = {1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+
+/* Each yard's die shows what that player last threw, and the one belonging to whoever is
+   playing lights up. Nobody has to read a line of text to know it is their turn. */
+function paintYardDice(){
+  if(!S) return;
+  S.players.forEach((pl,seat) => {
+    const d = el('yd' + seat);
+    if(!d) return;
+    const mine = seat === S.turnAt && !S.over;
+    const v = mine && S.rolled ? S.dice : (pl.roll || 0);
+    const on = v ? PIP_AT[v] : [];
+    [...d.children].forEach((s,i) => s.className = on.includes(i) ? 'p' : '');
+    d.classList.toggle('turn', mine);
+    d.classList.toggle('waiting', mine && !S.rolled);
+    d.classList.toggle('blank', !v);
+    // only the player whose turn it is, on their own device, can throw it
+    d.classList.toggle('live', mine && !S.rolled && myTurn());
+  });
+}
 
 /* ========== TURN FLOW ========== */
 const cur = () => S.players[S.turnAt];
@@ -369,6 +407,7 @@ function updateTurnUI(msg){
   el('turnWho').textContent = p.cpu ? p.name+' is playing' : p.name+"'s turn";
   el('turnWho').style.color = `var(${CVAR[p.id]}l)`;
   el('turnHint').textContent = msg || (p.cpu ? 'Thinking…' : 'Tap ROLL');
+  paintYardDice();
 }
 
 let timerId=null;
@@ -453,7 +492,7 @@ function doRoll(){
   setTimeout(()=>sfx.land(), 980);
   setTimeout(()=>{
     st.classList.remove('throw');
-    S.dice=v; S.rolled=true; busy=false;
+    S.dice=v; S.rolled=true; busy=false; S.players[S.turnAt].roll=v; paintYardDice();
     // the throw itself is news: without this the others only ever see the turn jump
     pushRoomState();
     afterRoll(v);
@@ -1666,6 +1705,7 @@ function applyRoomState(x){
     el('turnHint').textContent = myTurn() ? 'Tap ROLL' : 'Waiting…';
     highlight([]); clearTargets();
   }
+  paintYardDice();
   if(S.over) showRoomResult();
 }
 

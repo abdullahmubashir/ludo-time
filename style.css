@@ -838,3 +838,36 @@ input::placeholder{color:#6f688a}
 .k6{transform:rotateX(-90deg)  translateZ(calc(var(--dz) - 2px))}
 
 @media (max-height:760px){ .dice{--dz:24px} }
+
+/* ---------- a die in every yard ----------
+   The way it sits on a real table: each colour keeps its own, in the middle of its own
+   home. Whose turn it is stops being a line of text and becomes the die that is lit. */
+.ydie{
+  position:absolute;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);
+  padding:11%;gap:5%;border-radius:19%;
+  background:#f7f3ea;
+  box-shadow:0 0 0 1px rgba(60,48,30,.22), 0 2px 5px rgba(0,0,0,.4),
+             inset 0 -8% 0 rgba(150,132,102,.16);
+  transition:box-shadow .25s, transform .25s, opacity .25s;
+  opacity:.55;cursor:default;z-index:6;
+}
+.ydie span{border-radius:50%;place-self:center;width:74%;aspect-ratio:1;background:transparent}
+.ydie span.p{background:radial-gradient(circle at 34% 26%, #32294f 0%, #241f3d 42%, #1a1630 100%)}
+/* nothing thrown yet, so nothing to show */
+.ydie.blank{opacity:.32}
+/* the player in the chair */
+.ydie.turn{opacity:1;transform:scale(1.12);
+  box-shadow:0 0 0 2px #fff, 0 0 16px rgba(255,255,255,.45), 0 3px 7px rgba(0,0,0,.45)}
+/* and if that player is you, it is asking to be tapped */
+.ydie.live{cursor:pointer;animation:ydiePulse 1.15s ease-in-out infinite}
+@keyframes ydiePulse{
+  0%,100%{box-shadow:0 0 0 2px #fff, 0 0 14px rgba(255,255,255,.4), 0 3px 7px rgba(0,0,0,.45)}
+  50%    {box-shadow:0 0 0 3px var(--gold), 0 0 22px rgba(228,163,43,.75), 0 3px 7px rgba(0,0,0,.45)}}
+.ydie.live:active{transform:scale(1.04)}
+
+/* No percentage padding on the yard dice either: a percentage padding is measured against
+   the board, not the die, so an eleven percent inset on a small die was wider than the die
+   and blew it up to five times its size. The three-by-three grid fills it and each pip is
+   sized against its own square. */
+.ydie{padding:0;gap:0}
+.ydie span{width:62%}
