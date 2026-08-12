@@ -404,7 +404,7 @@ function autoPlay(){
    front 1 / back 6, right 3 / left 4, top 5 / bottom 2 */
 const FACE_PIPS = {1:1, 2:6, 3:3, 4:4, 5:5, 6:2};   // cube side -> pip count
 const FACE_BASE = {1:[0,0], 6:[0,-180], 3:[0,-90], 4:[0,90], 5:[-90,0], 2:[90,0]};
-const TILT = [-6, 8];    // almost dead-on: the number faces the player
+const TILT = [0, 0];     // dead-on: the number sits square to the player
 let diceX = TILT[0], diceY = TILT[1], diceZ = 0;
 
 function showFace(v,animate){

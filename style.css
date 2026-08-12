@@ -788,3 +788,15 @@ input::placeholder{color:#6f688a}
 .pip-mini{background:linear-gradient(157deg,#fdfbf7,#ece5d9);border-radius:26%;
   box-shadow:0 3px 0 rgba(20,17,34,.28), inset 0 -3px 5px rgba(150,132,102,.16),
              inset 0 3px 4px rgba(255,255,255,.9)}
+
+/* ---------- the die, plainer ----------
+   No shading across the face and no resting tilt: one flat cream square facing the player,
+   with just enough of a lip along the bottom to say it has thickness. */
+.face{
+  background:#f7f3ea;
+  box-shadow:
+    0 0 0 1px rgba(120,106,84,.14),
+    inset 0 -7% 0 rgba(150,132,102,.13);
+}
+.f3,.f4{background:#e6dfd2}
+.f5,.f6{background:#efe9dd}
