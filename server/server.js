@@ -14,6 +14,8 @@ import { fileURLToPath } from 'node:url';
 import { hashPassword, checkPassword, newToken, checkCredentials } from './auth.js';
 import { findUser, createUser, loadProfile, saveProfile,
          createToken, useToken, killToken, sweepTokens, dbPath } from './db.js';
+import { createRoom, joinRoom, leaveRoom, attachStream, startGame,
+         pushState, sendIntent, relaySignal, setVoice, sweepRooms, roomCount } from './rooms.js';
 
 const HERE = fileURLToPath(new URL('.', import.meta.url));
 const ROOT = resolve(HERE, '..');               // the game's own folder, one level up
@@ -103,6 +105,7 @@ setInterval(() => {
     if(live.length) attempts.set(ip, live); else attempts.delete(ip);
   }
   sweepTokens();
+  sweepRooms();
 }, 5 * 60 * 1000).unref();
 
 const addressOf = req =>
@@ -234,7 +237,34 @@ const server = createServer(async (req, res) => {
       if(req.method === 'POST' && pathname === '/api/logout')   return logout(req, res);
       if(req.method === 'GET'  && pathname === '/api/profile')  return getProfile(req, res);
       if(req.method === 'PUT'  && pathname === '/api/profile')  return await putProfile(req, res);
-      if(req.method === 'GET'  && pathname === '/api/health')   return send(res, 200, { ok: true });
+      if(req.method === 'GET'  && pathname === '/api/health')   return send(res, 200, { ok: true, rooms: roomCount() });
+
+      /* ---- private rooms ---- */
+      if(pathname === '/api/room/stream' && req.method === 'GET'){
+        const { searchParams } = new URL(req.url, 'http://localhost');
+        const ok = attachStream({ code: searchParams.get('code'),
+                                  playerId: searchParams.get('playerId'), res });
+        if(!ok) return fail(res, 404, 'That room or seat is gone.');
+        return;                                   // the line stays open from here on
+      }
+      if(req.method === 'POST' && pathname.startsWith('/api/room/')){
+        const body = await readJson(req);
+        const what = pathname.slice('/api/room/'.length);
+        const run = {
+          create: () => createRoom(body),
+          join  : () => joinRoom(body),
+          leave : () => leaveRoom(body),
+          start : () => startGame(body),
+          state : () => pushState(body),
+          intent: () => sendIntent(body),
+          signal: () => relaySignal(body),
+          voice : () => setVoice(body)
+        }[what];
+        if(!run) return fail(res, 404, 'No such endpoint.');
+        const out = run();
+        return out && out.error ? fail(res, 400, out.error) : send(res, 200, out);
+      }
+
       return fail(res, 404, 'No such endpoint.');
     }
 
