@@ -128,22 +128,6 @@ function drawBoard(){
     board.appendChild(s);
   }));
 
-  /* Every colour keeps its own die in the middle of its own yard, the way it sits on a
-     real table. Whose turn it is stops being something you read and becomes something you
-     see: their die is the one lit up, and it is the one that answers a tap. */
-  G.yards.forEach((y,a)=>{
-    const seat = S ? S.players.findIndex(p => p.id === a) : -1;
-    if(seat < 0) return;
-    const d = document.createElement('div');
-    d.className = 'ydie'; d.id = 'yd' + seat; d.dataset.seat = seat;
-    at(d, {x:y.cx, y:y.cy}, G.yardSize * 0.25);   // big enough to read, small enough to
-                                                  // leave the four resting spots alone
-    // the yard is turned to face its arm; the die stays the right way up regardless
-    d.style.transform = `rotate(${-y.rot}deg)`;
-    for(let i=0;i<9;i++) d.appendChild(document.createElement('span'));
-    d.onclick = () => { if(seat === S.turnAt) rollDice(); };
-    board.appendChild(d);
-  });
 
   // home lanes: flat player colour
   G.homes.forEach((lane,a)=>lane.forEach(p=>{
@@ -333,7 +317,7 @@ function newGame(count,mode,myName,len,names){
     }))
   };
   show('game');
-  drawBoard(); buildPlayerCards(); createTokens(); paintYardDice();
+  drawBoard(); buildPlayerCards(); createTokens(); buildDiceRows();
   fitBoard();
   requestAnimationFrame(()=>{ fitBoard(); renderTokens(); });
   setTimeout(startTurn,600);
@@ -357,23 +341,71 @@ const esc = s => String(s).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp
 
 const PIP_AT = {1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
 
-/* Each yard's die shows what that player last threw, and the one belonging to whoever is
-   playing lights up. Nobody has to read a line of text to know it is their turn. */
+/* A die apiece, standing outside the board beside the cabin it belongs to: the two at the
+   top of the board above it, the two at the bottom below. Each shows what that player last
+   threw and the one in play is lit, so whose turn it is stops being a line of text. */
+function buildDiceRows(){
+  const top = el('dieTop'), bot = el('dieBot');
+  top.innerHTML = ''; bot.innerHTML = '';
+  if(!S) return;
+
+  S.players.forEach((pl,seat) => {
+    const d = document.createElement('button');
+    d.className = 'pdie'; d.id = 'pd' + seat;
+    d.style.setProperty('--c',  `var(${CVAR[pl.id]})`);
+    d.style.setProperty('--cl', `var(${CVAR[pl.id]}l)`);
+    // the ring that empties while they think
+    d.innerHTML = '<i class="ring"></i><span class="pips"></span>';
+    for(let i=0;i<9;i++) d.querySelector('.pips').appendChild(document.createElement('em'));
+    d.onclick = () => { if(seat === S.turnAt) rollDice(); };
+    (yardIsHigh(pl.id) ? top : bot).appendChild(d);
+  });
+  paintYardDice();
+}
+
+/* Which half of the board a colour's cabin sits in. The yards are laid out by angle, so
+   the answer is simply whether the cabin is above the middle line or below it. */
+function yardIsHigh(colour){
+  const y = G.yards[colour];
+  return y ? y.cy < G.C : true;
+}
+
 function paintYardDice(){
   if(!S) return;
   S.players.forEach((pl,seat) => {
-    const d = el('yd' + seat);
+    const d = el('pd' + seat);
     if(!d) return;
     const mine = seat === S.turnAt && !S.over;
     const v = mine && S.rolled ? S.dice : (pl.roll || 0);
     const on = v ? PIP_AT[v] : [];
-    [...d.children].forEach((s,i) => s.className = on.includes(i) ? 'p' : '');
+    [...d.querySelector('.pips').children].forEach((s,i) => s.className = on.includes(i) ? 'p' : '');
     d.classList.toggle('turn', mine);
-    d.classList.toggle('waiting', mine && !S.rolled);
     d.classList.toggle('blank', !v);
-    // only the player whose turn it is, on their own device, can throw it
     d.classList.toggle('live', mine && !S.rolled && myTurn());
+    if(!mine) d.style.setProperty('--left', '1');       // the ring only empties on your turn
   });
+}
+
+/* The clock, drawn as a ring around the die that is thinking rather than a number counting
+   down. It is the same information without asking anyone to read. */
+function setDieClock(seat, left){
+  const d = el('pd' + seat);
+  if(d) d.style.setProperty('--left', left);
+}
+
+/* the throw itself, on the die that threw it */
+function tumbleDie(seat, value){
+  const d = el('pd' + seat);
+  if(!d) return;
+  d.classList.remove('throwing'); void d.offsetWidth; d.classList.add('throwing');
+  let n = 0;
+  const flick = setInterval(() => {
+    const v = 1 + Math.floor(Math.random()*6);
+    const on = PIP_AT[v];
+    [...d.querySelector('.pips').children].forEach((s,i) => s.className = on.includes(i) ? 'p' : '');
+    if(++n > 7){ clearInterval(flick); }
+  }, 90);
+  setTimeout(() => { clearInterval(flick); d.classList.remove('throwing'); paintYardDice(); }, 780);
 }
 
 /* ========== TURN FLOW ========== */
@@ -416,10 +448,12 @@ function startTimer(){
   S.players.forEach((_,i)=>{const b=el('tm'+i); if(b) b.style.width='0%';});
   // clearInterval stops the clock but leaves its number behind, which reads as still running
   timerId = null;
+  if(S) setDieClock(S.turnAt, 1);
   if(cur().cpu || !RULES.turnTimer) return;
   const bar=el('tm'+S.turnAt); let t=0; const LIMIT=18000;
   timerId=setInterval(()=>{
     t+=100; bar.style.width=(t/LIMIT*100)+'%';
+    setDieClock(S.turnAt, 1 - t/LIMIT);
     if(t>=LIMIT){ clearInterval(timerId); autoPlay(); }
   },100);
 }
@@ -487,6 +521,7 @@ function doRoll(){
   st.classList.remove('ready');
   st.classList.remove('throw'); void st.offsetWidth; st.classList.add('throw');
   const v=1+Math.floor(Math.random()*6);
+  tumbleDie(S.turnAt, v);
   showFace(v,true);
   sfx.roll();
   setTimeout(()=>sfx.land(), 980);

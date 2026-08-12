@@ -871,3 +871,55 @@ input::placeholder{color:#6f688a}
    sized against its own square. */
 .ydie{padding:0;gap:0}
 .ydie span{width:62%}
+
+/* ============================================================================
+   THE DICE, OUTSIDE THE BOARD
+   One per player, standing beside the cabin it belongs to - the top half's dice
+   above the board, the bottom half's below. The board keeps its own space back.
+   ========================================================================== */
+.dierow{display:flex;justify-content:center;gap:14px;flex:none;padding:2px 0}
+.dierow.top{margin-bottom:5px}
+.dierow.bottom{margin-top:5px}
+
+.pdie{
+  --left:1;                       /* how much of the turn is left, 1 down to 0 */
+  position:relative;flex:none;
+  width:clamp(42px,12vw,58px);aspect-ratio:1;padding:0;border:0;
+  border-radius:22%;background:#f7f3ea;
+  box-shadow:0 0 0 1px rgba(60,48,30,.2), 0 3px 7px rgba(0,0,0,.45),
+             inset 0 -7% 0 rgba(150,132,102,.15);
+  opacity:.5;transition:opacity .25s, transform .25s;cursor:default;
+}
+.pdie .pips{position:absolute;inset:13%;display:grid;
+  grid-template:repeat(3,1fr)/repeat(3,1fr)}
+.pdie em{place-self:center;width:64%;aspect-ratio:1;border-radius:50%;background:transparent}
+.pdie em.p{background:radial-gradient(circle at 34% 26%,#32294f 0%,#241f3d 42%,#1a1630 100%)}
+.pdie.blank{opacity:.3}
+
+/* whose turn it is */
+.pdie.turn{opacity:1;transform:scale(1.1)}
+/* and a ring in their colour that empties while they think */
+.pdie .ring{position:absolute;inset:-5px;border-radius:26%;pointer-events:none;opacity:0;
+  background:conic-gradient(var(--cl) calc(var(--left) * 360deg), transparent 0);
+  -webkit-mask:radial-gradient(circle, transparent 0 calc(50% - 3px), #000 calc(50% - 3px));
+          mask:radial-gradient(circle, transparent 0 calc(50% - 3px), #000 calc(50% - 3px));
+  transition:opacity .2s}
+.pdie.turn .ring{opacity:1}
+
+/* if that player is you, it is asking to be tapped */
+.pdie.live{cursor:pointer;animation:pdieCall 1.15s ease-in-out infinite}
+@keyframes pdieCall{
+  0%,100%{box-shadow:0 0 0 1px rgba(60,48,30,.2), 0 3px 7px rgba(0,0,0,.45)}
+  50%    {box-shadow:0 0 0 2px var(--gold), 0 0 20px rgba(228,163,43,.6), 0 3px 7px rgba(0,0,0,.45)}}
+.pdie.live:active{transform:scale(1.02)}
+.pdie.throwing{animation:pdieThrow .78s cubic-bezier(.3,1.4,.4,1)}
+@keyframes pdieThrow{
+  0%  {transform:scale(1.1) rotate(0)}
+  30% {transform:scale(1.28) rotate(-16deg) translateY(-9px)}
+  60% {transform:scale(1.18) rotate(13deg) translateY(-4px)}
+  100%{transform:scale(1.1) rotate(0)}}
+
+/* the line under the board that says whose turn it is */
+.turnline{flex:none;text-align:center;margin-top:6px;font-size:14px;color:var(--text)}
+.turnline span{font-family:var(--display);font-weight:600}
+.turnline small{color:var(--muted);margin-left:6px;font-size:12.5px}

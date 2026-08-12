@@ -214,15 +214,14 @@
     </div>
   </div>
   <div class="players" id="players"></div>
+  <!-- a die outside each end of the board, standing with the cabin it belongs to -->
+  <div class="dierow top" id="dieTop"></div>
   <div class="board-stage"><div class="board" id="board"></div></div>
-  <div class="dockrow">
-    <div class="dice-stage"><div class="dshadow"></div><div class="dice" id="dice"></div></div>
-    <div class="turn-txt">
-      <div class="turn-who" id="turnWho">Your turn</div>
-      <div class="turn-hint" id="turnHint">Tap ROLL</div>
-    </div>
-    <button class="roll-btn" id="rollBtn">ROLL</button>
-  </div>
+  <div class="dierow bottom" id="dieBot"></div>
+  <div class="turnline"><span id="turnWho">Your turn</span> <small id="turnHint">Tap your dice</small></div>
+  <!-- the old dock still drives the turn flow; it just has nothing left to show -->
+  <div class="dice-stage" hidden><div class="dshadow"></div><div class="dice" id="dice"></div></div>
+  <button class="roll-btn" id="rollBtn" hidden>ROLL</button>
 </div>
 
 <!-- ===== MODALS ===== -->
