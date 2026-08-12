@@ -560,6 +560,9 @@ input::placeholder{color:#7d8fa4}
   /* the die is a real cube: shrink a face and the half-depth each one is pushed out by
      has to shrink with it, or the six sides stop meeting at the corners */
   .dice-stage{width:66px;height:66px}
+  /* the cube has to shrink with its faces, or they hang off one corner of it */
+  .dice{width:48px;height:48px}
+  .dshadow{width:44px;margin-left:-22px}
   .face{width:48px;height:48px;padding:8px}
   .f1{transform:translateZ(24px)}
   .f2{transform:rotateY(180deg) translateZ(24px)}
@@ -800,3 +803,15 @@ input::placeholder{color:#6f688a}
 }
 .f3,.f4{background:#e6dfd2}
 .f5,.f6{background:#efe9dd}
+
+/* ---------- the die, last pass ----------
+   Six rounded faces meeting at a corner leave a notch you can see straight through, and on
+   a die that notch reads as a chip out of it. Two things close it: less rounding, and each
+   face grown a hair past the cube so neighbours overlap at the seam instead of meeting.
+   The pips come down a size - the designer's sit well inside their square. */
+.face{
+  inset:-1.5px;width:auto;height:auto;      /* a touch larger than the cube it wraps */
+  border-radius:15%;
+}
+.face i{width:74%}
+.dshadow{width:78%;left:11%;margin-left:0}
