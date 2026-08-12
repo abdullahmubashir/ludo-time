@@ -1008,11 +1008,12 @@ async function reward(won){
 
 /* ========== THEMES ========== */
 const THEMES = [
-  { id:'classic', name:'Classic Felt', price:0, swatch:'#0e4d3f', chip:'#fbf6e9',
-    v:{'--g0':'rgba(210,31,38,.52)','--g1':'rgba(13,143,66,.52)','--g2':'rgba(232,169,0,.44)','--g3':'rgba(15,99,196,.54)','--base1':'#122a3e','--base2':'#050a12',
-       '--plate1':'#fdfaf0','--board-cream':'#fbf6e9','--plate2':'#efe6cf',
-       '--frame-1':'#3a2a1c','--frame-2':'#5c4227','--line':'#d9cfb4',
-       '--cell':'#ffffff','--mark':'#8fa0ad','--line':'#a3b0ba','--edge':'#2d4a3e','--gold':'#f5c451'} },
+  // the one the brief describes: indigo room, warm card board, a single gold
+  { id:'classic', name:'Ludo Time', price:0, swatch:'#241f3d', chip:'#f5ead0',
+    v:{'--g0':'rgba(88,70,150,.34)','--g1':'rgba(58,48,104,.3)','--g2':'rgba(70,54,124,.26)','--g3':'rgba(44,38,84,.34)','--base1':'#231d43','--base2':'#141122',
+       '--plate1':'#fbf7ea','--board-cream':'#f5ead0','--plate2':'#e8d6b0',
+       '--frame-1':'#2a2340','--frame-2':'#3a3158',
+       '--cell':'#fbf7ea','--mark':'#b9a97f','--line':'#d6c7a4','--edge':'#2a2340','--gold':'#e4a32b'} },
 
   { id:'velvet', name:'Royal Velvet', price:600, swatch:'#4a1d5e', chip:'#f7efdc',
     v:{'--g0':'rgba(214,44,96,.52)','--g1':'rgba(120,60,200,.52)','--g2':'rgba(232,183,66,.42)','--g3':'rgba(70,54,180,.5)','--base1':'#241033','--base2':'#0e0518',

@@ -1,19 +1,26 @@
 :root{
-  --g0:rgba(210,31,38,.52); --g1:rgba(13,143,66,.52);
-  --g2:rgba(232,169,0,.44); --g3:rgba(15,99,196,.54);
-  --base1:#122a3e; --base2:#050a12;
-  --plate1:#fdfaf0; --board-cream:#fbf6e9; --plate2:#efe6cf;
-  --frame-1:#3a2a1c; --frame-2:#5c4227;
-  --line:#a3b0ba; --cell:#ffffff; --mark:#8fa0ad; --edge:#37474f;
+  /* One quiet indigo room, lit from above. The colour that used to pour in from four
+     corners now belongs to the board and the pieces, which is where the eye should go. */
+  --g0:rgba(88,70,150,.34); --g1:rgba(58,48,104,.3);
+  --g2:rgba(70,54,124,.26); --g3:rgba(44,38,84,.34);
+  --base1:#231d43; --base2:#141122;
 
-  --p0:#d21f26;  --p0d:#8e1116;  --p0l:#ff6b62;
-  --p1:#0d8f42;  --p1d:#065c28;  --p1l:#4fd47c;
-  --p2:#e8a900;  --p2d:#9c6d00;  --p2l:#ffd24d;
-  --p3:#0f63c4;  --p3d:#093c7d;  --p3l:#5b9dff;
-  --p4:#8a35cc;  --p4d:#571b85;  --p4l:#bd80ff;
-  --p5:#e35d16;  --p5d:#993a06;  --p5l:#ff9c5c;
+  --plate1:#fbf7ea; --board-cream:#f5ead0; --plate2:#e8d6b0;
+  --frame-1:#2a2340; --frame-2:#3a3158;
+  --line:#d6c7a4; --cell:#fbf7ea; --mark:#b9a97f; --edge:#2a2340;
 
-  --ink:#1d1a16; --gold:#f5c451;
+  /* the surfaces everything sits on */
+  --panel:#241f3d; --panel-2:#2a2340; --hair:rgba(255,255,255,.07);
+  --text:#efeaf7; --muted:#8f87ab; --muted-2:#a79fc0;
+
+  --p0:#d64550;  --p0d:#8e2730;  --p0l:#f0a8ad;
+  --p1:#2a9d8f;  --p1d:#1c4438;  --p1l:#6fd6c8;
+  --p2:#e4a32b;  --p2d:#8a5f10;  --p2l:#ffd47a;
+  --p3:#3c6fb0;  --p3d:#243049;  --p3l:#8fb8ee;
+  --p4:#8a5cc4;  --p4d:#52324a;  --p4l:#c2a3f0;
+  --p5:#e07a3c;  --p5d:#8a4517;  --p5l:#ffb583;
+
+  --ink:#241a05; --gold:#e4a32b; --gold-2:#cf8a1f;
   --display:'Fredoka',system-ui,sans-serif;
   --body:'Outfit',system-ui,sans-serif;
 }
@@ -32,8 +39,10 @@ body{
   height:100dvh;display:flex;align-items:stretch;justify-content:center;
   padding:8px 10px;overflow:hidden;
 }
+/* The wallpaper of little boards was loud enough to compete with the real one. It stays,
+   but as texture you notice only if you look for it. */
 body::before{
-  content:"";position:fixed;inset:0;pointer-events:none;opacity:.55;
+  content:"";position:fixed;inset:0;pointer-events:none;opacity:.09;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cg opacity='.32'%3E%3Cg transform='translate(4,2) rotate(15 30 30) scale(1)'%3E%3Crect x='0' y='0' width='60' height='60' rx='3' fill='none' stroke='%23ffffff' stroke-opacity='.55' stroke-width='1.5'/%3E%3Crect x='1' y='1' width='23' height='23' rx='2' fill='%23e8474e'/%3E%3Crect x='36' y='1' width='23' height='23' rx='2' fill='%2334c47a'/%3E%3Crect x='36' y='36' width='23' height='23' rx='2' fill='%23f5cc4d'/%3E%3Crect x='1' y='36' width='23' height='23' rx='2' fill='%234f9dff'/%3E%3Cg fill='%23ffffff' fill-opacity='.8'%3E%3Crect x='7' y='7' width='11' height='11'/%3E%3Crect x='42' y='7' width='11' height='11'/%3E%3Crect x='42' y='42' width='11' height='11'/%3E%3Crect x='7' y='42' width='11' height='11'/%3E%3C/g%3E%3Crect x='2' y='26' width='22' height='8' fill='%23e8474e'/%3E%3Crect x='26' y='2' width='8' height='22' fill='%2334c47a'/%3E%3Crect x='36' y='26' width='22' height='8' fill='%23f5cc4d'/%3E%3Crect x='26' y='36' width='8' height='22' fill='%234f9dff'/%3E%3Cpath d='M24 24L30 30L24 36Z' fill='%23e8474e'/%3E%3Cpath d='M24 24L36 24L30 30Z' fill='%2334c47a'/%3E%3Cpath d='M36 24L36 36L30 30Z' fill='%23f5cc4d'/%3E%3Cpath d='M24 36L30 30L36 36Z' fill='%234f9dff'/%3E%3C/g%3E%3Cg transform='translate(4,262) rotate(15 30 30) scale(1)'%3E%3Crect x='0' y='0' width='60' height='60' rx='3' fill='none' stroke='%23ffffff' stroke-opacity='.55' stroke-width='1.5'/%3E%3Crect x='1' y='1' width='23' height='23' rx='2' fill='%23e8474e'/%3E%3Crect x='36' y='1' width='23' height='23' rx='2' fill='%2334c47a'/%3E%3Crect x='36' y='36' width='23' height='23' rx='2' fill='%23f5cc4d'/%3E%3Crect x='1' y='36' width='23' height='23' rx='2' fill='%234f9dff'/%3E%3Cg fill='%23ffffff' fill-opacity='.8'%3E%3Crect x='7' y='7' width='11' height='11'/%3E%3Crect x='42' y='7' width='11' height='11'/%3E%3Crect x='42' y='42' width='11' height='11'/%3E%3Crect x='7' y='42' width='11' height='11'/%3E%3C/g%3E%3Crect x='2' y='26' width='22' height='8' fill='%23e8474e'/%3E%3Crect x='26' y='2' width='8' height='22' fill='%2334c47a'/%3E%3Crect x='36' y='26' width='22' height='8' fill='%23f5cc4d'/%3E%3Crect x='26' y='36' width='8' height='22' fill='%234f9dff'/%3E%3Cpath d='M24 24L30 30L24 36Z' fill='%23e8474e'/%3E%3Cpath d='M24 24L36 24L30 30Z' fill='%2334c47a'/%3E%3Cpath d='M36 24L36 36L30 30Z' fill='%23f5cc4d'/%3E%3Cpath d='M24 36L30 30L36 36Z' fill='%234f9dff'/%3E%3C/g%3E%3Cg transform='translate(264,2) rotate(15 30 30) scale(1)'%3E%3Crect x='0' y='0' width='60' height='60' rx='3' fill='none' stroke='%23ffffff' stroke-opacity='.55' stroke-width='1.5'/%3E%3Crect x='1' y='1' width='23' height='23' rx='2' fill='%23e8474e'/%3E%3Crect x='36' y='1' width='23' height='23' rx='2' fill='%2334c47a'/%3E%3Crect x='36' y='36' width='23' height='23' rx='2' fill='%23f5cc4d'/%3E%3Crect x='1' y='36' width='23' height='23' rx='2' fill='%234f9dff'/%3E%3Cg fill='%23ffffff' fill-opacity='.8'%3E%3Crect x='7' y='7' width='11' height='11'/%3E%3Crect x='42' y='7' width='11' height='11'/%3E%3Crect x='42' y='42' width='11' height='11'/%3E%3Crect x='7' y='42' width='11' height='11'/%3E%3C/g%3E%3Crect x='2' y='26' width='22' height='8' fill='%23e8474e'/%3E%3Crect x='26' y='2' width='8' height='22' fill='%2334c47a'/%3E%3Crect x='36' y='26' width='22' height='8' fill='%23f5cc4d'/%3E%3Crect x='26' y='36' width='8' height='22' fill='%234f9dff'/%3E%3Cpath d='M24 24L30 30L24 36Z' fill='%23e8474e'/%3E%3Cpath d='M24 24L36 24L30 30Z' fill='%2334c47a'/%3E%3Cpath d='M36 24L36 36L30 30Z' fill='%23f5cc4d'/%3E%3Cpath d='M24 36L30 30L36 36Z' fill='%234f9dff'/%3E%3C/g%3E%3Cg transform='translate(264,262) rotate(15 30 30) scale(1)'%3E%3Crect x='0' y='0' width='60' height='60' rx='3' fill='none' stroke='%23ffffff' stroke-opacity='.55' stroke-width='1.5'/%3E%3Crect x='1' y='1' width='23' height='23' rx='2' fill='%23e8474e'/%3E%3Crect x='36' y='1' width='23' height='23' rx='2' fill='%2334c47a'/%3E%3Crect x='36' y='36' width='23' height='23' rx='2' fill='%23f5cc4d'/%3E%3Crect x='1' y='36' width='23' height='23' rx='2' fill='%234f9dff'/%3E%3Cg fill='%23ffffff' fill-opacity='.8'%3E%3Crect x='7' y='7' width='11' height='11'/%3E%3Crect x='42' y='7' width='11' height='11'/%3E%3Crect x='42' y='42' width='11' height='11'/%3E%3Crect x='7' y='42' width='11' height='11'/%3E%3C/g%3E%3Crect x='2' y='26' width='22' height='8' fill='%23e8474e'/%3E%3Crect x='26' y='2' width='8' height='22' fill='%2334c47a'/%3E%3Crect x='36' y='26' width='22' height='8' fill='%23f5cc4d'/%3E%3Crect x='26' y='36' width='8' height='22' fill='%234f9dff'/%3E%3Cpath d='M24 24L30 30L24 36Z' fill='%23e8474e'/%3E%3Cpath d='M24 24L36 24L30 30Z' fill='%2334c47a'/%3E%3Cpath d='M36 24L36 36L30 30Z' fill='%23f5cc4d'/%3E%3Cpath d='M24 36L30 30L36 36Z' fill='%234f9dff'/%3E%3C/g%3E%3Cg transform='translate(152,88) rotate(-21 30 30) scale(0.84)'%3E%3Crect x='0' y='0' width='60' height='60' rx='3' fill='none' stroke='%23ffffff' stroke-opacity='.55' stroke-width='1.5'/%3E%3Crect x='1' y='1' width='23' height='23' rx='2' fill='%23e8474e'/%3E%3Crect x='36' y='1' width='23' height='23' rx='2' fill='%2334c47a'/%3E%3Crect x='36' y='36' width='23' height='23' rx='2' fill='%23f5cc4d'/%3E%3Crect x='1' y='36' width='23' height='23' rx='2' fill='%234f9dff'/%3E%3Cg fill='%23ffffff' fill-opacity='.8'%3E%3Crect x='7' y='7' width='11' height='11'/%3E%3Crect x='42' y='7' width='11' height='11'/%3E%3Crect x='42' y='42' width='11' height='11'/%3E%3Crect x='7' y='42' width='11' height='11'/%3E%3C/g%3E%3Crect x='2' y='26' width='22' height='8' fill='%23e8474e'/%3E%3Crect x='26' y='2' width='8' height='22' fill='%2334c47a'/%3E%3Crect x='36' y='26' width='22' height='8' fill='%23f5cc4d'/%3E%3Crect x='26' y='36' width='8' height='22' fill='%234f9dff'/%3E%3Cpath d='M24 24L30 30L24 36Z' fill='%23e8474e'/%3E%3Cpath d='M24 24L36 24L30 30Z' fill='%2334c47a'/%3E%3Cpath d='M36 24L36 36L30 30Z' fill='%23f5cc4d'/%3E%3Cpath d='M24 36L30 30L36 36Z' fill='%234f9dff'/%3E%3C/g%3E%3Cg transform='translate(50,166) rotate(9 30 30) scale(0.95)'%3E%3Crect x='0' y='0' width='60' height='60' rx='3' fill='none' stroke='%23ffffff' stroke-opacity='.55' stroke-width='1.5'/%3E%3Crect x='1' y='1' width='23' height='23' rx='2' fill='%23e8474e'/%3E%3Crect x='36' y='1' width='23' height='23' rx='2' fill='%2334c47a'/%3E%3Crect x='36' y='36' width='23' height='23' rx='2' fill='%23f5cc4d'/%3E%3Crect x='1' y='36' width='23' height='23' rx='2' fill='%234f9dff'/%3E%3Cg fill='%23ffffff' fill-opacity='.8'%3E%3Crect x='7' y='7' width='11' height='11'/%3E%3Crect x='42' y='7' width='11' height='11'/%3E%3Crect x='42' y='42' width='11' height='11'/%3E%3Crect x='7' y='42' width='11' height='11'/%3E%3C/g%3E%3Crect x='2' y='26' width='22' height='8' fill='%23e8474e'/%3E%3Crect x='26' y='2' width='8' height='22' fill='%2334c47a'/%3E%3Crect x='36' y='26' width='22' height='8' fill='%23f5cc4d'/%3E%3Crect x='26' y='36' width='8' height='22' fill='%234f9dff'/%3E%3Cpath d='M24 24L30 30L24 36Z' fill='%23e8474e'/%3E%3Cpath d='M24 24L36 24L30 30Z' fill='%2334c47a'/%3E%3Cpath d='M36 24L36 36L30 30Z' fill='%23f5cc4d'/%3E%3Cpath d='M24 36L30 30L36 36Z' fill='%234f9dff'/%3E%3C/g%3E%3Cg transform='translate(198,206) rotate(28 30 30) scale(0.62)'%3E%3Crect x='0' y='0' width='60' height='60' rx='3' fill='none' stroke='%23ffffff' stroke-opacity='.55' stroke-width='1.5'/%3E%3Crect x='1' y='1' width='23' height='23' rx='2' fill='%23e8474e'/%3E%3Crect x='36' y='1' width='23' height='23' rx='2' fill='%2334c47a'/%3E%3Crect x='36' y='36' width='23' height='23' rx='2' fill='%23f5cc4d'/%3E%3Crect x='1' y='36' width='23' height='23' rx='2' fill='%234f9dff'/%3E%3Cg fill='%23ffffff' fill-opacity='.8'%3E%3Crect x='7' y='7' width='11' height='11'/%3E%3Crect x='42' y='7' width='11' height='11'/%3E%3Crect x='42' y='42' width='11' height='11'/%3E%3Crect x='7' y='42' width='11' height='11'/%3E%3C/g%3E%3Crect x='2' y='26' width='22' height='8' fill='%23e8474e'/%3E%3Crect x='26' y='2' width='8' height='22' fill='%2334c47a'/%3E%3Crect x='36' y='26' width='22' height='8' fill='%23f5cc4d'/%3E%3Crect x='26' y='36' width='8' height='22' fill='%234f9dff'/%3E%3Cpath d='M24 24L30 30L24 36Z' fill='%23e8474e'/%3E%3Cpath d='M24 24L36 24L30 30Z' fill='%2334c47a'/%3E%3Cpath d='M36 24L36 36L30 30Z' fill='%23f5cc4d'/%3E%3Cpath d='M24 36L30 30L36 36Z' fill='%234f9dff'/%3E%3C/g%3E%3Cg transform='translate(-30,110) rotate(-8 30 30) scale(0.72)'%3E%3Crect x='0' y='0' width='60' height='60' rx='3' fill='none' stroke='%23ffffff' stroke-opacity='.55' stroke-width='1.5'/%3E%3Crect x='1' y='1' width='23' height='23' rx='2' fill='%23e8474e'/%3E%3Crect x='36' y='1' width='23' height='23' rx='2' fill='%2334c47a'/%3E%3Crect x='36' y='36' width='23' height='23' rx='2' fill='%23f5cc4d'/%3E%3Crect x='1' y='36' width='23' height='23' rx='2' fill='%234f9dff'/%3E%3Cg fill='%23ffffff' fill-opacity='.8'%3E%3Crect x='7' y='7' width='11' height='11'/%3E%3Crect x='42' y='7' width='11' height='11'/%3E%3Crect x='42' y='42' width='11' height='11'/%3E%3Crect x='7' y='42' width='11' height='11'/%3E%3C/g%3E%3Crect x='2' y='26' width='22' height='8' fill='%23e8474e'/%3E%3Crect x='26' y='2' width='8' height='22' fill='%2334c47a'/%3E%3Crect x='36' y='26' width='22' height='8' fill='%23f5cc4d'/%3E%3Crect x='26' y='36' width='8' height='22' fill='%234f9dff'/%3E%3Cpath d='M24 24L30 30L24 36Z' fill='%23e8474e'/%3E%3Cpath d='M24 24L36 24L30 30Z' fill='%2334c47a'/%3E%3Cpath d='M36 24L36 36L30 30Z' fill='%23f5cc4d'/%3E%3Cpath d='M24 36L30 30L36 36Z' fill='%234f9dff'/%3E%3C/g%3E%3Cg transform='translate(230,110) rotate(-8 30 30) scale(0.72)'%3E%3Crect x='0' y='0' width='60' height='60' rx='3' fill='none' stroke='%23ffffff' stroke-opacity='.55' stroke-width='1.5'/%3E%3Crect x='1' y='1' width='23' height='23' rx='2' fill='%23e8474e'/%3E%3Crect x='36' y='1' width='23' height='23' rx='2' fill='%2334c47a'/%3E%3Crect x='36' y='36' width='23' height='23' rx='2' fill='%23f5cc4d'/%3E%3Crect x='1' y='36' width='23' height='23' rx='2' fill='%234f9dff'/%3E%3Cg fill='%23ffffff' fill-opacity='.8'%3E%3Crect x='7' y='7' width='11' height='11'/%3E%3Crect x='42' y='7' width='11' height='11'/%3E%3Crect x='42' y='42' width='11' height='11'/%3E%3Crect x='7' y='42' width='11' height='11'/%3E%3C/g%3E%3Crect x='2' y='26' width='22' height='8' fill='%23e8474e'/%3E%3Crect x='26' y='2' width='8' height='22' fill='%2334c47a'/%3E%3Crect x='36' y='26' width='22' height='8' fill='%23f5cc4d'/%3E%3Crect x='26' y='36' width='8' height='22' fill='%234f9dff'/%3E%3Cpath d='M24 24L30 30L24 36Z' fill='%23e8474e'/%3E%3Cpath d='M24 24L36 24L30 30Z' fill='%2334c47a'/%3E%3Cpath d='M36 24L36 36L30 30Z' fill='%23f5cc4d'/%3E%3Cpath d='M24 36L30 30L36 36Z' fill='%234f9dff'/%3E%3C/g%3E%3Cg transform='translate(212,-28) rotate(-14 30 30) scale(0.7)'%3E%3Crect x='0' y='0' width='60' height='60' rx='3' fill='none' stroke='%23ffffff' stroke-opacity='.55' stroke-width='1.5'/%3E%3Crect x='1' y='1' width='23' height='23' rx='2' fill='%23e8474e'/%3E%3Crect x='36' y='1' width='23' height='23' rx='2' fill='%2334c47a'/%3E%3Crect x='36' y='36' width='23' height='23' rx='2' fill='%23f5cc4d'/%3E%3Crect x='1' y='36' width='23' height='23' rx='2' fill='%234f9dff'/%3E%3Cg fill='%23ffffff' fill-opacity='.8'%3E%3Crect x='7' y='7' width='11' height='11'/%3E%3Crect x='42' y='7' width='11' height='11'/%3E%3Crect x='42' y='42' width='11' height='11'/%3E%3Crect x='7' y='42' width='11' height='11'/%3E%3C/g%3E%3Crect x='2' y='26' width='22' height='8' fill='%23e8474e'/%3E%3Crect x='26' y='2' width='8' height='22' fill='%2334c47a'/%3E%3Crect x='36' y='26' width='22' height='8' fill='%23f5cc4d'/%3E%3Crect x='26' y='36' width='8' height='22' fill='%234f9dff'/%3E%3Cpath d='M24 24L30 30L24 36Z' fill='%23e8474e'/%3E%3Cpath d='M24 24L36 24L30 30Z' fill='%2334c47a'/%3E%3Cpath d='M36 24L36 36L30 30Z' fill='%23f5cc4d'/%3E%3Cpath d='M24 36L30 30L36 36Z' fill='%234f9dff'/%3E%3C/g%3E%3Cg transform='translate(212,232) rotate(-14 30 30) scale(0.7)'%3E%3Crect x='0' y='0' width='60' height='60' rx='3' fill='none' stroke='%23ffffff' stroke-opacity='.55' stroke-width='1.5'/%3E%3Crect x='1' y='1' width='23' height='23' rx='2' fill='%23e8474e'/%3E%3Crect x='36' y='1' width='23' height='23' rx='2' fill='%2334c47a'/%3E%3Crect x='36' y='36' width='23' height='23' rx='2' fill='%23f5cc4d'/%3E%3Crect x='1' y='36' width='23' height='23' rx='2' fill='%234f9dff'/%3E%3Cg fill='%23ffffff' fill-opacity='.8'%3E%3Crect x='7' y='7' width='11' height='11'/%3E%3Crect x='42' y='7' width='11' height='11'/%3E%3Crect x='42' y='42' width='11' height='11'/%3E%3Crect x='7' y='42' width='11' height='11'/%3E%3C/g%3E%3Crect x='2' y='26' width='22' height='8' fill='%23e8474e'/%3E%3Crect x='26' y='2' width='8' height='22' fill='%2334c47a'/%3E%3Crect x='36' y='26' width='22' height='8' fill='%23f5cc4d'/%3E%3Crect x='26' y='36' width='8' height='22' fill='%234f9dff'/%3E%3Cpath d='M24 24L30 30L24 36Z' fill='%23e8474e'/%3E%3Cpath d='M24 24L36 24L30 30Z' fill='%2334c47a'/%3E%3Cpath d='M36 24L36 36L30 30Z' fill='%23f5cc4d'/%3E%3Cpath d='M24 36L30 30L36 36Z' fill='%234f9dff'/%3E%3C/g%3E%3C/g%3E%3Cg fill-opacity='.24'%3E%3Ccircle cx='238' cy='150' r='4.4' fill='%23f5cc4d'/%3E%3Ccircle cx='252' cy='168' r='4.4' fill='%23f5cc4d'/%3E%3Ccircle cx='126' cy='250' r='4' fill='%2334c47a'/%3E%3Ccircle cx='144' cy='238' r='4' fill='%2334c47a'/%3E%3Ccircle cx='14' cy='240' r='3.6' fill='%23e8474e'/%3E%3C/g%3E%3C/svg%3E");
   background-size:260px 260px;background-repeat:repeat;
 }
@@ -562,3 +571,116 @@ input::placeholder{color:#7d8fa4}
   .turn-hint{font-size:11px;min-height:13px}
   .roll-btn{padding:11px 16px;font-size:15px}
 }
+
+/* ============================================================================
+   THE LOOK, REDRAWN TO THE BRIEF
+   A single indigo room; one warm gold for whatever the player is meant to press
+   next; everything else quiet grey-lavender so the board is the loudest thing on
+   the screen. Kept at the end of the file so it settles the argument.
+   ========================================================================== */
+
+/* ---------- type ---------- */
+.logo{
+  background:linear-gradient(180deg,#fff6e0 0%,var(--gold) 58%,var(--gold-2) 100%);
+  filter:drop-shadow(0 3px 0 rgba(0,0,0,.3)) drop-shadow(0 10px 22px rgba(0,0,0,.45));
+  letter-spacing:-.03em;
+}
+.tag{color:var(--muted-2);letter-spacing:.02em;text-transform:none;font-size:14px;
+  font-weight:400;margin:10px 0 22px}
+.field-label{color:var(--muted);letter-spacing:.14em;font-size:10.5px;margin-bottom:8px}
+.hintline{color:var(--muted)}
+
+/* ---------- surfaces ---------- */
+.panel{background:var(--panel);border:1px solid var(--hair);border-radius:18px;
+  backdrop-filter:none;box-shadow:0 18px 40px rgba(0,0,0,.42)}
+
+/* ---------- the one warm button ---------- */
+.btn-play{border-radius:14px;padding:15px;font-size:19px;letter-spacing:.01em;
+  background:linear-gradient(180deg,#efb63a,var(--gold-2));color:var(--ink);
+  box-shadow:0 4px 0 #a8700f, 0 10px 26px rgba(228,163,43,.28)}
+.btn-play:active{transform:translateY(3px);box-shadow:0 1px 0 #a8700f}
+.btn-ghost{background:var(--panel-2);border:1px solid var(--hair);color:var(--muted-2);
+  border-radius:13px;font-size:14.5px}
+.btn-ghost:hover{background:#332b52;color:var(--text)}
+
+/* ---------- the choosers: mode, game, players ---------- */
+.seg button{background:var(--panel-2);border:1px solid var(--hair);color:var(--muted-2);
+  border-radius:13px;padding:13px 6px;font-size:14.5px;box-shadow:none}
+.seg button:hover{background:#332b52;color:var(--text)}
+/* the chosen one is outlined rather than filled, so a row of them stays calm */
+.seg button.on{background:rgba(228,163,43,.13);border-color:var(--gold);
+  color:var(--gold);box-shadow:none}
+
+/* ---------- fields ---------- */
+input[type=text],input[type=password]{background:#1c1832;border:1px solid var(--hair);
+  border-radius:13px;color:var(--text)}
+input[type=text]:focus,input[type=password]:focus{border-color:var(--gold)}
+input::placeholder{color:#6f688a}
+
+/* ---------- sign-in ---------- */
+.btn-auth{border-radius:13px;box-shadow:none;border:1px solid var(--hair);
+  background:var(--panel-2);color:var(--text);padding:13px 15px;font-size:15px}
+.btn-auth:hover{background:#332b52}
+.btn-auth .g{background:rgba(255,255,255,.08)}
+.auth-note{color:var(--muted)}
+.linkline button{color:var(--muted)}
+.linkline button:hover{color:var(--text)}
+
+/* ---------- the little dice on the sign-in screen ---------- */
+.pip-mini{background:#fbf7ea;border-radius:9px;box-shadow:0 3px 0 rgba(0,0,0,.3)}
+
+/* ---------- home ---------- */
+.hprof,.hcoins{background:var(--panel);border:1px solid var(--hair)}
+.big-btn{background:var(--panel);border:1px solid var(--hair);border-radius:16px;
+  box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.big-btn:hover{background:var(--panel-2)}
+.tray-btn{background:var(--panel);border:1px solid var(--hair);color:var(--muted-2)}
+.tray-btn:hover{background:var(--panel-2);color:var(--text)}
+
+/* ---------- in a match ---------- */
+.pcard{background:var(--panel);border:1px solid var(--hair)}
+.pcard.turn{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold),
+  0 0 18px rgba(228,163,43,.22);background:rgba(228,163,43,.09)}
+.pcard .nm{color:var(--text)}
+.pcard .sc{color:var(--muted)}
+.dockrow{background:var(--panel);border:1px solid var(--hair)}
+.turn-who{color:var(--text)}
+.turn-hint{color:var(--muted)}
+.roll-btn{background:linear-gradient(180deg,#efb63a,var(--gold-2));color:var(--ink);
+  box-shadow:0 4px 0 #a8700f}
+.roll-btn:active{box-shadow:0 1px 0 #a8700f}
+.roll-btn[disabled]{box-shadow:0 4px 0 #4a3f22}
+.icon-btn{background:var(--panel);border:1px solid var(--hair);color:var(--muted-2)}
+.icon-btn:hover{background:var(--panel-2);color:var(--text)}
+.brand-sm{color:var(--text);font-weight:700}
+
+/* ---------- dialogs ---------- */
+.overlay{background:rgba(12,9,24,.86)}
+.modal{background:var(--panel);border:1px solid var(--hair);border-radius:20px;
+  box-shadow:0 30px 60px rgba(0,0,0,.55)}
+.modal h2{color:var(--text)}
+.result-name{color:var(--text)}
+.result-sub{color:var(--muted-2)}
+
+/* ---------- the board ---------- */
+/* A border draws a line down all four sides, so every shared edge lands twice as dark.
+   One hairline shadow gives an even grid at half the weight, and the squares gain the
+   faint warmth of printed card rather than flat white. */
+.plate.sq{border-radius:10px;
+  background:radial-gradient(120% 90% at 50% 0%, var(--plate1), var(--board-cream) 60%, var(--plate2));
+  box-shadow:0 0 0 1px rgba(255,255,255,.4) inset, 0 20px 40px rgba(0,0,0,.5)}
+.plate.hex{background:radial-gradient(120% 90% at 50% 0%, var(--plate1), var(--board-cream) 60%, var(--plate2))}
+.cell{border:0;border-radius:2px;box-shadow:0 0 0 .5px rgba(150,132,96,.5);
+  background:transparent}
+.cell .mk{color:rgba(160,138,96,.75)}
+/* the yards: a soft block with a rounded well cut into it */
+.yardbox{border-radius:clamp(6px,2.4%,16px);
+  box-shadow:0 3px 8px rgba(0,0,0,.32), 0 0 0 1px rgba(0,0,0,.2);
+  background-image:linear-gradient(155deg,rgba(255,255,255,.22),rgba(0,0,0,.18))}
+.yardbox i{border:0;border-radius:clamp(5px,1.9%,12px);
+  background:linear-gradient(180deg,var(--plate1),var(--board-cream));
+  box-shadow:0 2px 7px rgba(0,0,0,.25) inset}
+.slot{box-shadow:0 1px 2px rgba(255,255,255,.45), 0 -1px 3px rgba(0,0,0,.32) inset;opacity:.9}
+.hub{filter:drop-shadow(0 3px 7px rgba(0,0,0,.42))}
+.hub .tri{box-shadow:0 0 0 1px rgba(255,255,255,.45) inset}
+.token{filter:drop-shadow(0 3px 3px rgba(0,0,0,.45))}
