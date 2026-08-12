@@ -815,3 +815,26 @@ input::placeholder{color:#6f688a}
 }
 .face i{width:74%}
 .dshadow{width:78%;left:11%;margin-left:0}
+
+/* ---------- the die's solid middle ----------
+   Half the depth is written once here so the six faces and the block behind them can never
+   drift apart. The block has square corners and sits a shade inside, so the triangle left
+   where three rounded faces meet shows more die instead of the board behind it. */
+.dice{--dz:32px}
+.f1{transform:translateZ(var(--dz))}
+.f2{transform:rotateY(180deg) translateZ(var(--dz))}
+.f3{transform:rotateY(90deg)   translateZ(var(--dz))}
+.f4{transform:rotateY(-90deg)  translateZ(var(--dz))}
+.f5{transform:rotateX(90deg)   translateZ(var(--dz))}
+.f6{transform:rotateX(-90deg)  translateZ(var(--dz))}
+
+.core{position:absolute;inset:0;border-radius:2px;background:#e3dbcd;
+  backface-visibility:hidden;pointer-events:none}
+.k1{transform:translateZ(calc(var(--dz) - 2px))}
+.k2{transform:rotateY(180deg) translateZ(calc(var(--dz) - 2px))}
+.k3{transform:rotateY(90deg)   translateZ(calc(var(--dz) - 2px))}
+.k4{transform:rotateY(-90deg)  translateZ(calc(var(--dz) - 2px))}
+.k5{transform:rotateX(90deg)   translateZ(calc(var(--dz) - 2px))}
+.k6{transform:rotateX(-90deg)  translateZ(calc(var(--dz) - 2px))}
+
+@media (max-height:760px){ .dice{--dz:24px} }

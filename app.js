@@ -1397,6 +1397,15 @@ function toMenu(){
 (function buildDice(){
   const layout={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
   const d=el('dice');
+
+  /* A solid cube just inside the rounded ones. Where three rounded faces meet they leave a
+     small triangle of nothing, and against a dark board that reads as a chip out of the
+     die. This sits behind every seam so what shows through is more die. */
+  for(let f=1;f<=6;f++){
+    const core=document.createElement('div'); core.className='core k'+f;
+    d.appendChild(core);
+  }
+
   for(let f=1;f<=6;f++){
     const face=document.createElement('div'); face.className='face f'+f;
     const pips=layout[FACE_PIPS[f]];
