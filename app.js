@@ -393,7 +393,8 @@ function stopTimer(){
 
 function autoPlay(){
   if(busy||S.over) return;
-  if(!S.rolled) rollDice();
+  if(ROOM.playing && !amHost()) return;   // the host's clock is the one that counts
+  if(!S.rolled) doRoll();
   else { const m=legalMoves(cur(),S.dice); if(m.length) doMove(cur(),m[0]); }
 }
 
@@ -425,14 +426,22 @@ function showFace(v,animate){
   d.style.transform = `rotateX(${diceX}deg) rotateY(${diceY}deg) rotateZ(${diceZ}deg)`;
 }
 
+/* What a tap on the dice means. In a room only the host actually throws: everyone else
+   asks and draws whatever comes back. */
 function rollDice(){
   if(S && S.over) return;
   if(ROOM.playing && !myTurn()) return;
-  // in a room only the host throws; everyone else asks, and draws what comes back
   if(ROOM.playing && !amHost()){
     if(S.rolled) return;
     el('rollBtn').disabled = true; askHost({t:'roll'}); return;
   }
+  doRoll();
+}
+
+/* The throw itself. The host runs this for whoever's turn it is - including turns that are
+   not theirs - so it must not ask whose turn it is. */
+function doRoll(){
+  if(!S || S.over) return;
   if(busy||S.rolled) return;
   busy=true; stopTimer(); el('rollBtn').disabled=true;
   const st=document.querySelector('.dice-stage');
@@ -444,7 +453,10 @@ function rollDice(){
   setTimeout(()=>sfx.land(), 980);
   setTimeout(()=>{
     st.classList.remove('throw');
-    S.dice=v; S.rolled=true; busy=false; afterRoll(v);
+    S.dice=v; S.rolled=true; busy=false;
+    // the throw itself is news: without this the others only ever see the turn jump
+    pushRoomState();
+    afterRoll(v);
   },1250);
 }
 
@@ -1579,7 +1591,7 @@ function openStream(){
     const { from, intent } = JSON.parse(e.data);
     const seat = ROOM.seats.findIndex(s => s.id === from);
     if(seat < 0 || seat !== S.turnAt) return;
-    if(intent.t === 'roll' && !S.rolled) rollDice();
+    if(intent.t === 'roll' && !S.rolled) doRoll();
     if(intent.t === 'move' && S.rolled &&
        legalMoves(S.players[seat], S.dice).includes(intent.ti)) doMove(S.players[seat], intent.ti);
   });
@@ -1678,15 +1690,24 @@ function paintVoice(){
   el('voiceLbl').textContent = VOICE.on ? 'Leave voice' : 'Join voice';
   el('voiceBtn').classList.toggle('live', VOICE.on);
   el('pttBtn').style.display = VOICE.on ? '' : 'none';
+  el('pttBtn').textContent = VOICE.open ? 'Mic on' : 'Mic off';
+  el('pttBtn').classList.toggle('hot', VOICE.open);
+  // the same switch follows the match onto the board
+  const m = el('micBtn');
+  m.style.display = VOICE.on ? '' : 'none';
+  m.textContent   = VOICE.open ? '🎙' : '🔇';
+  m.classList.toggle('hot', VOICE.open);
 }
 
+/* Open or shut, and it stays how it was left. Holding a button down to be heard is a thing
+   you forget mid-move, and then nobody hears the one person trying to speak. */
 function setMic(open){
   VOICE.open = open;
   if(VOICE.mic) VOICE.mic.getAudioTracks().forEach(t => t.enabled = open);
-  el('pttBtn').classList.toggle('hot', open);
-  el('pttBtn').textContent = open ? 'Talking…' : 'Hold to talk';
+  paintVoice();
   if(ROOM.code) roomApi('voice', { code:ROOM.code, playerId:ROOM.playerId, on:open }).catch(()=>{});
 }
+const toggleMic = () => { if(VOICE.on) setMic(!VOICE.open); };
 
 // one line per other person in the room
 function peerFor(id){
@@ -1772,8 +1793,7 @@ async function startVoice(){
     return;
   }
   VOICE.on = true;
-  setMic(false);                                   // muted until held
-  paintVoice();
+  setMic(true);                                    // joining voice means you can be heard
   // the lower id calls, so two people never ring each other at once
   for(const s of ROOM.seats)
     if(s.id !== ROOM.playerId && ROOM.playerId < s.id) callPeer(s.id);
@@ -1781,16 +1801,8 @@ async function startVoice(){
 }
 
 el('voiceBtn').onclick = () => VOICE.on ? stopVoice() : startVoice();
-
-// held down to talk, in the three ways a person might hold it
-const ptt = el('pttBtn');
-ptt.onmousedown  = () => setMic(true);
-ptt.onmouseup    = () => setMic(false);
-ptt.onmouseleave = () => setMic(false);
-ptt.ontouchstart = e => { e.preventDefault(); setMic(true); };
-ptt.ontouchend   = e => { e.preventDefault(); setMic(false); };
-document.addEventListener('keydown', e => { if(e.code==='Space' && VOICE.on && !e.repeat && !/INPUT/.test(document.activeElement.tagName)){ e.preventDefault(); setMic(true); } });
-document.addEventListener('keyup',   e => { if(e.code==='Space' && VOICE.on){ e.preventDefault(); setMic(false); } });
+el('pttBtn').onclick   = toggleMic;
+el('micBtn').onclick   = toggleMic;
 
 /* ---------- the buttons ---------- */
 

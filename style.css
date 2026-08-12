@@ -739,3 +739,7 @@ input::placeholder{color:#6f688a}
   border-radius:50%;background:#8f87ab;transition:transform .18s, background .18s}
 .sw.on{background:var(--gold)}
 .sw.on::after{transform:translateX(19px);background:#fffaf0}
+
+/* the microphone follows the match onto the board */
+.icon-btn.mic.hot{background:#123028;color:#4fd6a5;border-color:rgba(79,214,165,.45);
+  box-shadow:0 0 14px rgba(79,214,165,.3)}
