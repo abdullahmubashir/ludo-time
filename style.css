@@ -963,3 +963,21 @@ input::placeholder{color:#6f688a}
 .pdie .ring{inset:-3px;
   -webkit-mask:radial-gradient(circle, transparent 0 calc(50% - 1px), #000 calc(50% - 1px));
           mask:radial-gradient(circle, transparent 0 calc(50% - 1px), #000 calc(50% - 1px))}
+
+/* ---------- the clock ring, done properly ----------
+   It was a round hole cut out of a square, so along the flats it came out a hair wide and
+   at the four corners - where a circle sits furthest from a square - it swelled into a
+   blob. That is what read as thick.
+
+   This masks out the content box and leaves only the padding, which follows the die's own
+   rounded-square outline. The padding is the thickness, and it is the same the whole way
+   round. */
+.pdie .ring{
+  inset:-3px;border-radius:27%;
+  padding:1.5px;
+  background:conic-gradient(var(--cl) calc(var(--left) * 360deg), transparent 0);
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;
+          mask-composite:exclude;
+}
