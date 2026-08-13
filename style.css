@@ -953,3 +953,13 @@ input::placeholder{color:#6f688a}
 :root{--dh:46px}
 @media (max-width:520px){ :root{--dh:38px} }
 @media (max-height:680px){ :root{--dh:38px} }
+
+/* The hidden attribute only asks for display:none, and any rule in this file that names a
+   display outranks it - which is how the old die went on standing under the board after
+   being told to go. This settles it for anything marked hidden, once. */
+[hidden]{display:none !important}
+
+/* the clock ring, thinner still: a hair around the die, not a band */
+.pdie .ring{inset:-3px;
+  -webkit-mask:radial-gradient(circle, transparent 0 calc(50% - 1px), #000 calc(50% - 1px));
+          mask:radial-gradient(circle, transparent 0 calc(50% - 1px), #000 calc(50% - 1px))}
