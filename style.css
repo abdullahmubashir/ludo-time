@@ -923,3 +923,33 @@ input::placeholder{color:#6f688a}
 .turnline{flex:none;text-align:center;margin-top:6px;font-size:14px;color:var(--text)}
 .turnline span{font-family:var(--display);font-weight:600}
 .turnline small{color:var(--muted);margin-left:6px;font-size:12.5px}
+
+/* ---------- dice standing over their own cabins ----------
+   The row takes the board's width and each die is placed at its cabin's own position
+   along it, so blue's die is over blue's corner rather than wherever it landed in a row. */
+.dierow{position:relative;display:block;align-self:center;height:auto;padding:0}
+.dierow.top{margin:0 auto 6px}
+.dierow.bottom{margin:6px auto 0}
+.dierow::after{content:'';display:block;padding-top:var(--dh,46px)}
+
+.pdie{
+  position:absolute;top:0;transform:translateX(-50%);
+  width:var(--dh,46px);height:var(--dh,46px);   /* smaller than the old dock die */
+  border-radius:23%;
+}
+.pdie.turn{transform:translateX(-50%) scale(1.09)}
+.pdie.live:active{transform:translateX(-50%) scale(1.02)}
+@keyframes pdieThrow{
+  0%  {transform:translateX(-50%) scale(1.09) rotate(0)}
+  30% {transform:translateX(-50%) scale(1.24) rotate(-15deg) translateY(-8px)}
+  60% {transform:translateX(-50%) scale(1.16) rotate(12deg) translateY(-3px)}
+  100%{transform:translateX(-50%) scale(1.09) rotate(0)}}
+
+/* the clock ring, drawn as a hairline rather than a band */
+.pdie .ring{inset:-4px;
+  -webkit-mask:radial-gradient(circle, transparent 0 calc(50% - 1.5px), #000 calc(50% - 1.5px));
+          mask:radial-gradient(circle, transparent 0 calc(50% - 1.5px), #000 calc(50% - 1.5px))}
+
+:root{--dh:46px}
+@media (max-width:520px){ :root{--dh:38px} }
+@media (max-height:680px){ :root{--dh:38px} }

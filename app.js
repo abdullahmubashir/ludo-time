@@ -197,6 +197,11 @@ function fitBoard(){
   if(side < 40) return;
   board.style.width  = side + 'px';
   board.style.height = side + 'px';
+  // the two rows of dice take the board's width, so each one lands over its own cabin
+  for(const id of ['dieTop','dieBot']){
+    const row = el(id);
+    if(row) row.style.width = side + 'px';
+  }
 }
 
 
@@ -350,16 +355,20 @@ function buildDiceRows(){
   if(!S) return;
 
   S.players.forEach((pl,seat) => {
+    const y = G.yards[pl.id];
     const d = document.createElement('button');
     d.className = 'pdie'; d.id = 'pd' + seat;
     d.style.setProperty('--c',  `var(${CVAR[pl.id]})`);
     d.style.setProperty('--cl', `var(${CVAR[pl.id]}l)`);
+    // stood directly over its own cabin rather than shuffled into the middle of a row
+    d.style.left = (y.cx / G.total * 100) + '%';
     // the ring that empties while they think
     d.innerHTML = '<i class="ring"></i><span class="pips"></span>';
     for(let i=0;i<9;i++) d.querySelector('.pips').appendChild(document.createElement('em'));
     d.onclick = () => { if(seat === S.turnAt) rollDice(); };
     (yardIsHigh(pl.id) ? top : bot).appendChild(d);
   });
+  fitBoard();
   paintYardDice();
 }
 
