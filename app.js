@@ -2029,7 +2029,15 @@ el('roomLeaveBtn').onclick = async () => {
    next time. Only the sign-in screen lets a press through, because above it there is
    nothing of ours left to go up to. */
 
-function armBack(){ history.pushState({ lt:1 }, ''); }
+/* A page opened straight off the disk is not allowed to touch the history at all, and
+   asking throws. Without the spare entry there is nothing for a back press to land on, so
+   it leaves - which is exactly what a broken back button looks like. Worth knowing. */
+let canHoldBack = true;
+function armBack(){
+  if(!canHoldBack) return;
+  try{ history.pushState({ lt:1 }, ''); }
+  catch(e){ canHoldBack = false; }
+}
 
 let quitArmed = 0;                       // when the home screen was last warned
 
