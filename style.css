@@ -583,8 +583,12 @@ input::placeholder{color:#7d8fa4}
    ========================================================================== */
 
 /* ---------- type ---------- */
+/* The background shorthand resets background-clip along with everything else, so
+   restating the gradient here quietly wiped the clip-to-text and left a solid gold block
+   where the title should be. Both are named together now. */
 .logo{
   background:linear-gradient(180deg,#fff6e0 0%,var(--gold) 58%,var(--gold-2) 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
   filter:drop-shadow(0 3px 0 rgba(0,0,0,.3)) drop-shadow(0 10px 22px rgba(0,0,0,.45));
   letter-spacing:-.03em;
 }
