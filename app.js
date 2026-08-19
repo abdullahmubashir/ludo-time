@@ -855,7 +855,11 @@ const store={
     delete memStore[k];
   }
 };
-const show = id => document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));
+let atScreen = 'auth';
+const show = id => {
+  atScreen = id;
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));
+};
 function toast(msg){
   document.querySelectorAll('.toast').forEach(t=>t.remove());
   const t=document.createElement('div'); t.className='toast'; t.textContent=msg;
@@ -2013,6 +2017,67 @@ el('roomLeaveBtn').onclick = async () => {
   if(!await ask('Leave this room?','The others carry on without you.','Leave','Stay','🚪')) return;
   leaveRoom(); show('home');
 };
+
+
+/* ========== GOING BACK ==========
+   A phone's back button means "up one step", and a game that treats it as "quit" throws
+   people out of a match for pressing the wrong thing once. Every screen knows what it sits
+   under, and the two places where leaving costs something ask first.
+
+   The trick is to keep one spare entry in the history at all times. A back press lands on
+   that instead of leaving the page, we act on it, and then we put another one there for
+   next time. Only the sign-in screen lets a press through, because above it there is
+   nothing of ours left to go up to. */
+
+function armBack(){ history.pushState({ lt:1 }, ''); }
+
+let quitArmed = 0;                       // when the home screen was last warned
+
+async function goBack(){
+  // a dialog is the top-most thing there is: back shuts it and nothing else happens
+  const openModal = document.querySelector('.overlay.show');
+  if(openModal){ openModal.classList.remove('show'); return true; }
+
+  switch(atScreen){
+    case 'account':
+    case 'setup':
+      show('auth'); return true;
+
+    case 'match':
+      show('home'); return true;
+
+    case 'room':
+      // the code-entry step goes up to the sign-in screen; a room you are sitting in asks
+      if(getComputedStyle(el('roomLobby')).display === 'none'){ show('home'); return true; }
+      if(await ask('Leave this room?', 'The others carry on without you.', 'Leave', 'Stay', '🚪')){
+        leaveRoom(); show('home');
+      }
+      return true;
+
+    case 'game':
+      if(await ask('Leave the match?', 'It ends here and nobody wins it.', 'Leave', 'Keep playing', '🚪'))
+        toMenu();
+      return true;
+
+    case 'home': {
+      // twice, close together, or it was not meant
+      const now = Date.now();
+      if(now - quitArmed < 2600) return false;      // let this one through: the app closes
+      quitArmed = now;
+      toast('Press back again to close the game');
+      return true;
+    }
+  }
+  return true;                                       // anywhere unnamed, simply stay
+}
+
+window.addEventListener('popstate', async () => {
+  const held = await goBack();
+  if(held) armBack();                                // put the spare entry back
+  else history.back();                               // let go: leave the way we came
+});
+
+armBack();
 
 (async function boot(){
   TOKEN   = await store.get(TOKEN_KEY);
