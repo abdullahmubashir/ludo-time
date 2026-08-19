@@ -985,3 +985,86 @@ input::placeholder{color:#6f688a}
   -webkit-mask-composite:xor;
           mask-composite:exclude;
 }
+
+/* ============================================================================
+   THE SIGN-IN BANNER
+   The game's own furniture arranged around its name: two boards turned away at
+   the edges, four gotis, a die showing the six everybody waits for, and a warm
+   light behind the middle. Nothing here is a picture - it is all the same board
+   the game is played on, which is why it belongs.
+   ========================================================================== */
+.banner{
+  position:relative;overflow:hidden;flex:none;
+  margin:2px 0 16px;padding:20px 12px 18px;
+  border-radius:20px;
+  background:linear-gradient(158deg,#2e2552 0%,#221c3e 46%,#191430 100%);
+  box-shadow:0 0 0 1px rgba(255,255,255,.06), 0 18px 38px rgba(0,0,0,.45),
+             inset 0 1px 0 rgba(255,255,255,.09);
+  isolation:isolate;
+}
+
+/* the warm light the title sits in */
+.banner .glow{position:absolute;left:50%;top:46%;width:78%;height:120%;
+  transform:translate(-50%,-50%);pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse at center, rgba(228,163,43,.3), transparent 62%)}
+
+/* two boards, turned away and half sunk into the dark */
+.banner .bnr-board{position:absolute;width:132px;height:132px;opacity:.16;z-index:0;
+  filter:blur(.2px)}
+.banner .bnr-board:not(.two){left:-34px;bottom:-40px;transform:rotate(-17deg)}
+.banner .bnr-board.two{right:-36px;top:-44px;transform:rotate(14deg)}
+
+/* four gotis, tucked into the corners */
+.banner .goti{position:absolute;width:15px;height:15px;border-radius:50% 50% 45% 45%;
+  z-index:1;box-shadow:0 2px 4px rgba(0,0,0,.5), inset 0 -2px 3px rgba(0,0,0,.3),
+                       inset 0 2px 3px rgba(255,255,255,.5);
+  animation:bnrFloat 4.6s ease-in-out infinite}
+.banner .g1{left:15%;top:20%;background:#d64550;animation-delay:0s}
+.banner .g2{right:17%;top:16%;background:#2a9d8f;animation-delay:1.15s}
+.banner .g3{right:13%;bottom:19%;background:#e4a32b;animation-delay:2.3s}
+.banner .g4{left:18%;bottom:16%;background:#3c6fb0;animation-delay:3.45s}
+@keyframes bnrFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+/* the die, showing a six */
+.banner .bnr-die{position:absolute;right:8%;bottom:24%;width:30px;height:30px;z-index:1;
+  display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);
+  border-radius:22%;background:#f7f3ea;
+  box-shadow:0 0 0 1px rgba(60,48,30,.2), 0 3px 7px rgba(0,0,0,.45),
+             inset 0 -7% 0 rgba(150,132,102,.15);
+  animation:bnrDie 5.2s ease-in-out infinite}
+.banner .bnr-die em{place-self:center;width:52%;aspect-ratio:1;border-radius:50%;
+  background:transparent}
+.banner .bnr-die em.p{background:#241f3d}
+@keyframes bnrDie{0%,100%{transform:rotate(-8deg) translateY(0)}
+  50%{transform:rotate(7deg) translateY(-5px)}}
+
+/* the name, over all of it */
+.banner .logo{position:relative;z-index:2;margin:0}
+
+@media (max-height:680px){
+  .banner{padding:13px 10px 12px;margin-bottom:11px;border-radius:16px}
+  .banner .bnr-board{width:104px;height:104px}
+  .banner .bnr-die{width:24px;height:24px}
+  .banner .goti{width:12px;height:12px}
+}
+
+/* ---------- the two fields, matched ----------
+   Only text inputs had ever been given a size, and a password box is a different type - so
+   it fell back to whatever the browser felt like and sat half the height of the one above
+   it. Both are named here, and both come down a little from where the username was. */
+input[type=text],input[type=password]{
+  width:100%;padding:11px 14px;border-radius:12px;
+  font-size:15px;font-family:inherit;line-height:1.3;
+  background:#1c1832;border:1px solid var(--hair);color:var(--text);outline:none;
+}
+input[type=text]:focus,input[type=password]:focus{border-color:var(--gold)}
+
+/* the eye sits inside the box rather than beside it, so both fields stay the same width */
+.pass-wrap{position:relative}
+.pass-wrap input{padding-right:44px}
+.pass-wrap .eye{
+  position:absolute;right:4px;top:50%;transform:translateY(-50%);
+  width:34px;height:34px;border-radius:9px;font-size:16px;line-height:1;
+  display:grid;place-items:center;opacity:.6;transition:.15s;
+}
+.pass-wrap .eye:hover{opacity:1;background:rgba(255,255,255,.07)}

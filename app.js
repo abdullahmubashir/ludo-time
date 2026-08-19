@@ -66,6 +66,42 @@ const el = id => document.getElementById(id);
 const board = el('board');
 const wait = ms => new Promise(r=>setTimeout(r,ms));
 
+
+/* ========== THE SIGN-IN BANNER ==========
+   A ludo board is a handsome thing on its own - four colours meeting in the middle, a
+   track of little squares, a die. The banner is built out of that and nothing else. No
+   characters: drawing people is the one thing code is reliably bad at. */
+(function drawBanner(){
+  const RED = '#d64550', GRN = '#2a9d8f', YEL = '#e4a32b', BLU = '#3c6fb0', CREAM = '#f5ead0';
+  const box = (x, y, w, h, f, r) =>
+    '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h +
+    '" rx="' + (r || 0) + '" fill="' + f + '"/>';
+  const tri = (pts, f) => '<polygon points="' + pts + '" fill="' + f + '"/>';
+
+  const yard = (x, y, c) => box(x, y, 60, 60, c, 4) + box(x + 10, y + 10, 40, 40, CREAM, 3);
+
+  let g = box(0, 0, 150, 150, CREAM, 6);
+  g += yard(0, 0, RED) + yard(90, 0, GRN) + yard(90, 90, YEL) + yard(0, 90, BLU);
+
+  // the four home runs reaching in towards the middle
+  for(let k = 1; k <= 5; k++){
+    g += box(k * 10, 70, 10, 10, RED);
+    g += box(70, k * 10, 10, 10, GRN);
+    g += box(140 - (k - 1) * 10, 70, 10, 10, YEL);
+    g += box(70, 140 - (k - 1) * 10, 10, 10, BLU);
+  }
+  g += tri('60,60 90,60 75,75', GRN) + tri('90,60 90,90 75,75', YEL)
+     + tri('90,90 60,90 75,75', BLU) + tri('60,90 60,60 75,75', RED);
+
+  document.querySelectorAll('.bnr-board').forEach(s => { s.innerHTML = g; });
+
+  // the die in the corner shows a six, which is the roll everyone is waiting for
+  const on = [0, 2, 3, 5, 6, 8];
+  document.querySelectorAll('.bnr-die em').forEach((e, i) => {
+    if(on.includes(i)) e.className = 'p';
+  });
+})();
+
 /* ========== SOUND ========== */
 let AC=null;
 function beep(f,dur,type,vol){
@@ -943,8 +979,8 @@ function paintAccount(){
   el('acctGoBtn').textContent   = making ? 'CREATE ACCOUNT' : 'SIGN IN';
   el('acctSwapBtn').textContent = making ? 'I already have an account' : 'Create an account instead';
   el('acctPass').autocomplete   = making ? 'new-password' : 'current-password';
-  acctSay(making ? 'Pick a name and password you will remember — there is no email to reset them with.'
-                 : 'Your coins and level follow this account onto any phone.');
+  // the line stays empty until there is something to say; nobody reads standing advice
+  acctSay('');
 }
 
 function openAccount(mode='login'){
@@ -977,6 +1013,16 @@ function paintServerState(){
     (b.querySelector('.lbl') || b).textContent = serverUp ? onText : offText;
   }
 }
+/* A password you cannot see is a password you cannot check, and there is no email here to
+   reset one with - so a single typo would lock somebody out of their own coins. */
+el('passEye').onclick = () => {
+  const box = el('acctPass'), shown = box.type === 'text';
+  box.type = shown ? 'password' : 'text';
+  el('passEye').textContent = shown ? '👁' : '🙈';
+  el('passEye').setAttribute('aria-label', shown ? 'Show password' : 'Hide password');
+  box.focus();
+};
+
 el('acctBackBtn').onclick  = ()=>show('auth');
 el('acctSwapBtn').onclick  = ()=>{ acctMode = acctMode==='register' ? 'login' : 'register'; paintAccount(); };
 el('acctPass').onkeydown   = e=>{ if(e.key==='Enter') el('acctGoBtn').click(); };

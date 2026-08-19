@@ -19,9 +19,16 @@
 
 <!-- ===== SIGN IN ===== -->
 <div class="screen active" id="auth">
-  <h1 class="logo"><span>LUDO</span><span>TIME</span></h1>
-  <div class="dicebar"><div class="pip-mini">🎲</div><div class="pip-mini">🔴</div>
-    <div class="pip-mini">🟢</div><div class="pip-mini">🟣</div></div>
+  <!-- the banner: the board's own furniture, arranged around the name -->
+  <div class="banner">
+    <i class="glow"></i>
+    <svg class="bnr-board" viewBox="0 0 150 150" aria-hidden="true"></svg>
+    <svg class="bnr-board two" viewBox="0 0 150 150" aria-hidden="true"></svg>
+    <span class="goti g1"></span><span class="goti g2"></span>
+    <span class="goti g3"></span><span class="goti g4"></span>
+    <div class="bnr-die"><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em><em></em></div>
+    <h1 class="logo"><span>LUDO</span><span>TIME</span></h1>
+  </div>
   <div class="panel">
     <button class="btn-auth" id="googleBtn"><span class="g">G</span><span class="lbl">Continue with Google</span></button>
     <button class="btn-auth guest" id="acctBtn">
@@ -39,8 +46,11 @@
       <input type="text" id="acctName" maxlength="16" autocomplete="username"
              autocapitalize="off" spellcheck="false" placeholder="3-16 letters, numbers or _"></div>
     <div class="field"><label class="field-label">Password</label>
-      <input type="password" id="acctPass" maxlength="200" autocomplete="current-password"
-             placeholder="At least 6 characters"></div>
+      <div class="pass-wrap">
+        <input type="password" id="acctPass" maxlength="200" autocomplete="current-password"
+               placeholder="At least 6 characters">
+        <button type="button" class="eye" id="passEye" aria-label="Show password">👁</button>
+      </div></div>
     <p class="auth-note" id="acctMsg">Your coins and level follow this account onto any phone.</p>
     <button class="btn-play" id="acctGoBtn">SIGN IN</button>
     <div class="linkline">
