@@ -2059,8 +2059,10 @@ async function goBack(){
         toMenu();
       return true;
 
-    case 'home': {
-      // twice, close together, or it was not meant
+    // the two screens with nothing of ours above them: twice, close together, or it was
+    // not meant. Saying so is the point - a press that does nothing at all reads as broken.
+    case 'home':
+    case 'auth': {
       const now = Date.now();
       if(now - quitArmed < 2600) return false;      // let this one through: the app closes
       quitArmed = now;
