@@ -1068,3 +1068,39 @@ input[type=text]:focus,input[type=password]:focus{border-color:var(--gold)}
   display:grid;place-items:center;opacity:.6;transition:.15s;
 }
 .pass-wrap .eye:hover{opacity:1;background:rgba(255,255,255,.07)}
+
+
+/* ---------- the eye, drawn ----------
+   An emoji cannot be given a colour, so on a dark field it came out near enough black and
+   nobody could find it. This one takes the gold the rest of the screen uses. */
+.pass-wrap .eye{
+  opacity:1;color:var(--muted-2);
+  background:rgba(255,255,255,.05);border:1px solid var(--hair);
+}
+.pass-wrap .eye svg{width:19px;height:19px;display:block}
+.pass-wrap .eye:hover{color:var(--text);background:rgba(255,255,255,.11)}
+/* while the password is showing, the eye is lit and the stroke through it lifts */
+.pass-wrap .eye.open{color:var(--gold);border-color:rgba(228,163,43,.45);
+  background:rgba(228,163,43,.13)}
+.pass-wrap .eye .slash{transition:opacity .15s}
+.pass-wrap .eye.open .slash{opacity:0}
+
+
+/* the eye while it is being held down */
+.pass-wrap .eye{user-select:none;-webkit-user-select:none;touch-action:none}
+.pass-wrap .eye.open{color:var(--gold) !important;
+  border-color:rgba(228,163,43,.5) !important;
+  background:rgba(228,163,43,.16) !important;
+  transform:translateY(-50%) scale(.94)}
+
+/* ---------- the sign-in panels, drawn in ----------
+   These hold two fields and a button; at the full width of the screen they read as a wide
+   empty box with a little type marooned in the middle. The board still gets the whole
+   width - it is the one thing that wants it. */
+/* An auto margin on a flex item stops it stretching and shrinks it to its contents, so
+   centring these by margin quietly made them as narrow as the widest button inside. Aligned
+   instead, and the width is asked for outright. */
+#auth .panel, #account .panel, #setup .panel, #room .panel,
+#auth .banner, #account .logo, #setup .logo, #room .logo, #room #roomLobby{
+  width:100%;max-width:455px;align-self:center;margin-left:0;margin-right:0;
+}

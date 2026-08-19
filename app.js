@@ -1014,14 +1014,27 @@ function paintServerState(){
   }
 }
 /* A password you cannot see is a password you cannot check, and there is no email here to
-   reset one with - so a single typo would lock somebody out of their own coins. */
-el('passEye').onclick = () => {
-  const box = el('acctPass'), shown = box.type === 'text';
-  box.type = shown ? 'password' : 'text';
-  el('passEye').textContent = shown ? '👁' : '🙈';
-  el('passEye').setAttribute('aria-label', shown ? 'Show password' : 'Hide password');
-  box.focus();
-};
+   reset one with - so a single mistyped character would lock somebody out of their own
+   coins for good.
+
+   It reads while held rather than switching on and off. Nothing is left showing after a
+   thumb comes off it, so a password cannot sit uncovered on a screen somebody else is
+   looking over. */
+(function holdToRead(){
+  const eye = el('passEye'), box = el('acctPass');
+  const open  = () => { box.type = 'text';     eye.classList.add('open'); };
+  const close = () => { box.type = 'password'; eye.classList.remove('open'); };
+
+  eye.addEventListener('mousedown',  e => { e.preventDefault(); open(); });
+  eye.addEventListener('touchstart', e => { e.preventDefault(); open(); }, {passive:false});
+
+  // every way a press can end, including one that wanders off the button
+  for(const ev of ['mouseup','mouseleave','touchend','touchcancel','blur'])
+    eye.addEventListener(ev, close);
+  window.addEventListener('mouseup', close);
+  // and if the screen is put away mid-press, it must not still be open on return
+  document.addEventListener('visibilitychange', close);
+})();
 
 el('acctBackBtn').onclick  = ()=>show('auth');
 el('acctSwapBtn').onclick  = ()=>{ acctMode = acctMode==='register' ? 'login' : 'register'; paintAccount(); };
