@@ -233,7 +233,7 @@ input::placeholder{color:#7d8fa4}
    not the die's own, so on a small die it swallows the whole face and leaves the pips with
    nothing. The three-by-three grid fills the die and each pip is sized against its own
    square instead. */
-.hdie{position:absolute;right:-11%;bottom:3%;width:17%;aspect-ratio:1;border-radius:20%;
+.hdie{position:absolute;right:-11%;bottom:3%;width:11.5%;aspect-ratio:1;border-radius:20%;
   background:linear-gradient(150deg,#fdfcf7,#d9d2c2);
   box-shadow:0 10px 18px rgba(0,0,0,.55), inset 0 2px 3px rgba(255,255,255,.85);
   display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);
