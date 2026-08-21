@@ -1566,7 +1566,20 @@ function toMenu(){
   showFace(1);
 })();
 
+/* The home-screen board has to be square, and two separate ceilings - one on its width,
+   one on its height - cannot agree on that: whichever bites leaves the other alone and
+   the square comes out an oblong. Measured instead, from whichever of the two is smaller. */
+function fitHero(){
+  const wrap = document.querySelector('.hero-wrap'), hero = document.querySelector('.hero');
+  if(!wrap || !hero) return;
+  const side = Math.floor(Math.min(wrap.clientWidth * 0.92, wrap.clientHeight * 0.9));
+  if(side < 40) return;
+  hero.style.width = side + 'px';
+  hero.style.height = side + 'px';
+}
+
 function relayout(){
+  fitHero();
   const wrap = el('players');
   if(wrap && S) wrap.style.gridTemplateColumns = `repeat(${cardColumns()}, 1fr)`;
   fitBoard();
@@ -2109,4 +2122,7 @@ armBack();
 
   if(PROFILE){ applyProfileSettings(); paintProfile(); show('home'); }
   else { applyTheme('classic'); show('auth'); }
+
+  // the home board is measured rather than guessed, so it waits for a layout to measure
+  requestAnimationFrame(fitHero);
 })();

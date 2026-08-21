@@ -214,7 +214,9 @@ async function serveStatic(req, res, pathname){
     const body = await readFile(full);
     res.writeHead(200, {
       'content-type': TYPES[extname(full).toLowerCase()] || 'application/octet-stream',
-      'cache-control': 'no-cache'
+      // no-store, not no-cache: without a validator to check against, browsers were
+      // serving yesterday's script beside today's stylesheet and the two disagreed
+      'cache-control': 'no-store, must-revalidate'
     });
     res.end(body);
   }catch(e){

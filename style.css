@@ -1104,3 +1104,118 @@ input[type=text]:focus,input[type=password]:focus{border-color:var(--gold)}
 #auth .banner, #account .logo, #setup .logo, #room .logo, #room #roomLobby{
   width:100%;max-width:455px;align-self:center;margin-left:0;margin-right:0;
 }
+
+/* ============================================================================
+   THE HOME SCREEN, REBALANCED
+   The board is the thing worth looking at; the three ways into a game only need
+   to be readable. They had been taking two thirds of the screen between them and
+   the row of small buttons underneath was wrapping onto a second line, which
+   left the board pinned at a size it had long outgrown.
+   ========================================================================== */
+
+/* the three ways in: shorter, and lighter on the eye */
+.big-btn{padding:clamp(6px,1.1vh,10px) 13px;margin-bottom:6px;border-radius:14px;gap:11px}
+.big-btn .bi{width:32px;height:32px;font-size:18px;border-radius:10px}
+.big-btn .bt{font-size:clamp(13px,3.4vw,15.5px);line-height:1.1}
+.big-btn .bt small{font-size:11px}
+
+/* six small buttons in one row instead of five and a stray */
+.tray{grid-template-columns:repeat(6,1fr);gap:5px}
+.tray-btn{padding:clamp(4px,.8vh,7px) 3px;border-radius:12px;font-size:16px}
+.tray-btn span{font-size:9px}
+
+/* and the board takes everything they gave back. It had a fixed ceiling before, so
+   space freed up anywhere else simply went unused. */
+/* The board is tipped back a little as it sways, and a tipped square draws slightly
+   lower than it measures - so it keeps a hand's breadth of slack or the bottom edge
+   catches on the way past. */
+.hero{width:auto;height:100%;max-width:min(92%,420px);max-height:90%;
+  aspect-ratio:1;flex:0 1 auto}
+.hero-wrap{margin-bottom:8px}
+
+/* A tipped square draws lower than it measures, so the bottom corner was catching on the
+   edge of the box that clips the die's entrance. A little floor under it and nothing does. */
+.hero-wrap{padding-bottom:12px}
+
+/* On a short window the box the board sits in is small enough that a twelve pixel floor is
+   a real slice of it, and the tilt still caught the edge. Less floor, and a little more
+   room kept back for the lean. */
+@media (max-height:680px){
+  .hero-wrap{padding-bottom:4px;margin-bottom:5px}
+  .hero{max-height:84%}
+  .big-btn{padding:5px 11px;margin-bottom:4px}
+  .big-btn .bi{width:27px;height:27px;font-size:15px;border-radius:9px}
+  .big-btn .bt{font-size:13px}
+  .big-btn .bt small{font-size:10px}
+  .tray-btn{padding:3px 2px;font-size:14px}
+  .tray-btn span{font-size:8.5px}
+}
+
+/* ---------- let the board lean without catching ----------
+   The box was clipping whatever left it, so the die could slide in from off the board -
+   but a board that tips as it sways draws past its own corner, and that was being shaved
+   off too. Nothing is clipped now; instead the die simply starts its run closer in, which
+   nobody can tell apart from the outside. */
+.hero-wrap{overflow:visible;padding-bottom:0}
+.hero{max-height:100%}
+@keyframes dieRollIn{
+  0%,68%{opacity:0;transform:translate3d(105%,0,0) rotate(-300deg) scale(.5)}
+  72%{opacity:1}
+  84%{opacity:1;transform:translate3d(0,0,0) rotate(0deg) scale(1.06)}
+  87%{transform:translate3d(0,0,0) rotate(0deg) scale(1.13,.87)}
+  90%,94%{opacity:1;transform:translate3d(0,0,0) rotate(0deg) scale(1)}
+  100%{opacity:0;transform:translate3d(0,-16px,0) rotate(16deg) scale(.72)}}
+
+/* ---------- the three ways in, brought in from the edges ----------
+   Full width made them read as three long bars stacked up rather than three choices. */
+#home .big-btn{width:100%;max-width:430px;align-self:center}
+#home .tray, #home .linkline{width:100%;max-width:430px;align-self:center}
+
+@media (max-height:680px){
+  .hero-wrap{padding-bottom:0;margin-bottom:4px}
+  .hero{max-height:100%}
+}
+
+/* A board leaning back at eleven degrees draws a good deal lower than the space it is
+   given, and was coming down onto the first button. Less of a lean, and a margin kept
+   under it for what is left. */
+@keyframes boardSway{0%,100%{transform:rotateX(6deg) rotateZ(-1.2deg) translateY(0)}
+  50%{transform:rotateX(6deg) rotateZ(1.2deg) translateY(-7px)}}
+.hero{max-height:88%}
+
+/* Back to the lean it had - it looked right - and the size comes down instead, which keeps
+   it clear of the first button without changing how it sits. */
+@keyframes boardSway{0%,100%{transform:rotateX(11deg) rotateZ(-1.2deg) translateY(0)}
+  50%{transform:rotateX(11deg) rotateZ(1.2deg) translateY(-8px)}}
+.hero{max-height:80%}
+
+/* With nothing clipping the box any more, a die that sat outside the board's right edge
+   simply pushed the page wide on a narrow screen. It rests inside the board now and runs
+   in from its own corner rather than from off the edge of the world. */
+.hdie{right:3%;bottom:4%}
+@keyframes dieRollIn{
+  0%,68%{opacity:0;transform:translate3d(60%,0,0) rotate(-300deg) scale(.5)}
+  72%{opacity:1}
+  84%{opacity:1;transform:translate3d(0,0,0) rotate(0deg) scale(1.06)}
+  87%{transform:translate3d(0,0,0) rotate(0deg) scale(1.13,.87)}
+  90%,94%{opacity:1;transform:translate3d(0,0,0) rotate(0deg) scale(1)}
+  100%{opacity:0;transform:translate3d(0,-16px,0) rotate(16deg) scale(.72)}}
+
+/* the die's run-in kept to what the board itself can hold on the narrowest screen */
+.hdie{right:6%}
+@keyframes dieRollIn{
+  0%,68%{opacity:0;transform:translate3d(22%,0,0) rotate(-300deg) scale(.5)}
+  72%{opacity:1}
+  84%{opacity:1;transform:translate3d(0,0,0) rotate(0deg) scale(1.06)}
+  87%{transform:translate3d(0,0,0) rotate(0deg) scale(1.13,.87)}
+  90%,94%{opacity:1;transform:translate3d(0,0,0) rotate(0deg) scale(1)}
+  100%{opacity:0;transform:translate3d(0,-14px,0) rotate(14deg) scale(.72)}}
+
+/* A square tipped away from you stops being a square: the lean took eleven degrees off its
+   height and left it reading as a wide rectangle. The lean goes; the gentle turn and rise
+   stay, and the board is square again. */
+@keyframes boardSway{0%,100%{transform:rotateZ(-1.2deg) translateY(0)}
+  50%{transform:rotateZ(1.2deg) translateY(-8px)}}
+
+/* the board's size is measured in script now, so the two ceilings that disagreed are gone */
+.hero{max-width:none;max-height:none;aspect-ratio:auto}
