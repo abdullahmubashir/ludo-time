@@ -125,8 +125,8 @@ const sfx = {
 };
 
 /* ========== DRAW BOARD ========== */
-function at(n,p,size,rot){
-  const U = 100/G.total;
+function at(n,p,size,rot,total){
+  const U = 100/(total || G.total);
   n.style.left = (p.x*U) + '%';
   n.style.top  = (p.y*U) + '%';
   n.style.width  = (size*U)+'%';
@@ -136,65 +136,67 @@ function at(n,p,size,rot){
   if(rot!==undefined) n.style.transform = `rotate(${rot}deg)`;
 }
 
-function drawBoard(){
-  board.innerHTML='';
+function drawBoard(target, g){
+  target = target || board;
+  g = g || G;
+  target.innerHTML='';
 
-  if(G.N===6){
-    const f=document.createElement('div'); f.className='hexframe'; board.appendChild(f);
+  if(g.N===6){
+    const f=document.createElement('div'); f.className='hexframe'; target.appendChild(f);
   }
   const plate=document.createElement('div');
-  plate.className = 'plate ' + (G.N===6 ? 'hex' : 'sq');
-  board.appendChild(plate);
+  plate.className = 'plate ' + (g.N===6 ? 'hex' : 'sq');
+  target.appendChild(plate);
 
   // yards: solid colour block with a white inner square
-  G.yards.forEach((y,a)=>{
+  g.yards.forEach((y,a)=>{
     const d=document.createElement('div'); d.className='yardbox';
     d.style.background=`var(${CVAR[a]})`;
     d.dataset.a=a;
-    at(d,{x:y.cx,y:y.cy},G.yardSize,y.rot);
+    at(d,{x:y.cx,y:y.cy},g.yardSize,y.rot, g.total);
     d.innerHTML='<i></i>';
-    board.appendChild(d);
+    target.appendChild(d);
   });
 
   // the four resting spots inside each yard
-  G.yards.forEach((y,a)=>y.slots.forEach(sl=>{
+  g.yards.forEach((y,a)=>y.slots.forEach(sl=>{
     const s=document.createElement('div'); s.className='slot';
     s.style.background=`var(${CVAR[a]})`;
-    at(s,sl,G.slotSize);
-    board.appendChild(s);
+    at(s,sl,g.slotSize, undefined, g.total);
+    target.appendChild(s);
   }));
 
 
   // home lanes: flat player colour
-  G.homes.forEach((lane,a)=>lane.forEach(p=>{
+  g.homes.forEach((lane,a)=>lane.forEach(p=>{
     const d=document.createElement('div'); d.className='cell';
     d.style.background=`var(${CVAR[a]})`;
     d.style.borderColor='rgba(255,255,255,.55)';
-    at(d,p,1,p.rot); board.appendChild(d);
+    at(d,p,1,p.rot, g.total); target.appendChild(d);
   }));
 
   // track
-  G.track.forEach((p,idx)=>{
+  g.track.forEach((p,idx)=>{
     const d=document.createElement('div'); d.className='cell';
-    const owner = G.start.indexOf(idx);
+    const owner = g.start.indexOf(idx);
     if(owner>-1) d.style.background=`var(${CVAR[owner]})`;
-    else if(G.safe.has(idx)) d.innerHTML='<span class="mk">\u2606</span>';
-    at(d,p,1,p.rot); board.appendChild(d);
+    else if(g.safe.has(idx)) d.innerHTML='<span class="mk">\u2606</span>';
+    at(d,p,1,p.rot, g.total); target.appendChild(d);
   });
 
   // entry arrows pointing into each home lane
-  G.entry.forEach((idx,a)=>{
-    const p=G.track[idx];
+  g.entry.forEach((idx,a)=>{
+    const p=g.track[idx];
     const w=document.createElement('div'); w.className='arw';
     w.style.background=`var(${CVAR[a]})`;
-    at(w,p,0.62,p.rot+180);
-    board.appendChild(w);
+    at(w,p,0.62,p.rot+180, g.total);
+    target.appendChild(w);
   });
 
   // centre
   const hub=document.createElement('div'); hub.className='hub';
-  at(hub,{x:G.C,y:G.C}, G.hubR*2);
-  if(G.N===4){
+  at(hub,{x:g.C,y:g.C}, g.hubR*2, undefined, g.total);
+  if(g.N===4){
     [['polygon(0 0,50% 50%,0 100%)',0],['polygon(0 0,100% 0,50% 50%)',1],
      ['polygon(100% 0,100% 100%,50% 50%)',2],['polygon(0 100%,100% 100%,50% 50%)',3]]
       .forEach(([cl,a])=>{
@@ -210,7 +212,7 @@ function drawBoard(){
     t.style.clipPath='polygon(50% 0%,93.3% 25%,93.3% 75%,50% 100%,6.7% 75%,6.7% 25%)';
     hub.appendChild(t);
   }
-  board.appendChild(hub);
+  target.appendChild(hub);
 }
 
 
@@ -859,6 +861,7 @@ let atScreen = 'auth';
 const show = id => {
   atScreen = id;
   document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));
+  if(id === 'home' && typeof drawHero === 'function') drawHero();
 };
 function toast(msg){
   document.querySelectorAll('.toast').forEach(t=>t.remove());
@@ -1569,6 +1572,160 @@ function toMenu(){
 /* The home-screen board has to be square, and two separate ceilings - one on its width,
    one on its height - cannot agree on that: whichever bites leaves the other alone and
    the square comes out an oblong. Measured instead, from whichever of the two is smaller. */
+/* ========== THE BOARD ON THE HOME SCREEN ==========
+   It used to be drawn by hand in svg, a hundred and thirty rectangles with their corners
+   typed out one at a time, and a board drawn twice is a board that can disagree with
+   itself. It did: two starting squares sat a cell inside their own colour, and yellow's
+   and blue's runs home stopped a square short of the middle and ran on to the edge
+   instead. Nobody typed those wrong on purpose - that is simply what happens to a hundred
+   and thirty hand-placed numbers.
+
+   So it is the same board now, off the same geometry and through the same drawBoard, with
+   the same pieces standing on it. It cannot drift from the real one because it is not a
+   copy of it. What is added on top is only the part that moves: an arrival, a light across
+   the face, one piece walking its own track, and the die.
+
+   The walking piece is wrapped in a box the size of the whole board, so the percentages it
+   moves by are percentages of the board rather than of itself. That is what lets the walk
+   be written once and still land on the right squares at any size. */
+
+const HERO_G = buildGeom(4);              // four arms, the same fifteen by fifteen
+const HERO_CYCLE = 11;                    // seconds - the stylesheet is on the same clock
+const HERO_WALK  = 6;                     // squares walked, out of the yard and along
+
+// where a board square sits, as a percentage of the board
+const heroPc = p => ({ x: p.x * 100 / HERO_G.total, y: p.y * 100 / HERO_G.total });
+
+function heroPawn(colour){
+  const s = document.createElement('span');
+  s.className = 'hpawn';
+  s.style.setProperty('--tc',  `var(${CVAR[colour]})`);
+  s.style.setProperty('--tcl', `var(${CVAR[colour]}l)`);
+  s.style.setProperty('--tcd', `var(${CVAR[colour]}d)`);
+  s.innerHTML = GOTI_SVG;
+  return s;
+}
+
+/* The walk, written out as keyframes. The route is read off the real track, so the piece
+   goes where a red piece actually goes - out onto its starting square, along, and round
+   the corner - rather than wherever six equal steps happened to land it.
+
+   A hop is a thrown object: sideways at a steady rate, and height on an arc that is quick
+   off the ground and slow at the top. Both of those live in the frames, and the animation
+   stays on linear, because an easing curve laid over the top only fights them. */
+function heroWalkFrames(){
+  const START = 33, END = 75;                       // the walk's share of the cycle
+  const SPAN  = (END - START) / HERO_WALK;
+  const LIFT  = 3.6;                                // height of the arc, in board percent
+  const FLIGHT = 0.68, SQUASH = 0.78, RECOVER = 0.88;
+
+  const way = [];
+  for(let k = 0; k <= HERO_WALK; k++)
+    way.push(heroPc(HERO_G.track[(HERO_G.start[0] + k) % HERO_G.TN]));
+  const home = way[0];
+
+  const f = n => n.toFixed(2);
+  const move = (p, lift) => `transform:translate(${f(p.x - home.x)}%,${f(p.y - home.y + lift)}%)`;
+  // the piece is centred on its square by a transform of its own, so the squash goes on
+  // the individual `scale` property - naming `transform` here would wipe the centring out
+  const hop  = (sx, sy) => `scale:${f(sx)} ${f(sy)}`;
+
+  const travel = [`0%,${f(START)}%{${move(home, 0)}}`];
+  const squash = [`0%,${f(START)}%{${hop(1, 1)}}`];
+
+  for(let h = 0; h < HERO_WALK; h++){
+    const a = way[h], b = way[h + 1], base = START + h * SPAN;
+    for(const u of [0.10, 0.22, 0.35, 0.50, 0.65, 0.80, 0.92, 1.00]){
+      const pc = f(base + SPAN * FLIGHT * u);
+      travel.push(`${pc}%{${move({ x: a.x + (b.x - a.x) * u, y: a.y + (b.y - a.y) * u },
+                                 -LIFT * Math.sin(Math.PI * u))}}`);
+      const s = u < 0.35 ? (1 - u / 0.35) * 0.045 : 0;    // a stretch leaving the ground
+      squash.push(`${pc}%{${hop(1 - s, 1 + s)}}`);
+    }
+    travel.push(`${f(base + SPAN * SQUASH)}%{${move(b, 0)}}`);
+    travel.push(`${f(base + SPAN)}%{${move(b, 0)}}`);
+    squash.push(`${f(base + SPAN * SQUASH)}%{${hop(1.09, 0.91)}}`);    // it gives a touch
+    squash.push(`${f(base + SPAN * RECOVER)}%{${hop(0.98, 1.02)}}`);   // and comes back up
+    squash.push(`${f(base + SPAN)}%{${hop(1, 1)}}`);                   // and waits
+  }
+
+  const last = way[HERO_WALK];
+  travel.push(`${f(END)}%,94%{${move(last, 0)}}`);
+  travel.push(`100%{${move(last, 1.8)}}`);
+  squash.push(`${f(END)}%,94%{${hop(1, 1)}}`);
+  squash.push(`100%{${hop(0.9, 0.9)}}`);
+
+  return `@keyframes heroWalk{${travel.join('')}}@keyframes heroHop{${squash.join('')}}`;
+}
+
+function drawHero(){
+  const hero = document.querySelector('.hero');
+  if(!hero) return;
+
+  drawBoard(hero, HERO_G);                 // the real board, from the real code
+
+  /* Each part arrives on its own beat, in a wave from the top left. The plate underneath
+     goes first, or the pieces would land on nothing. */
+  const SPREAD = 0.7;                      // seconds between the first arrival and the last
+  hero.querySelectorAll('.cell,.yardbox,.slot,.arw,.hub').forEach(n => {
+    const x = parseFloat(n.style.left) || 0, y = parseFloat(n.style.top) || 0;
+    n.style.animationDelay = ((x + y) / 200 * SPREAD).toFixed(3) + 's';
+  });
+
+  const shine = document.createElement('i'); shine.className = 'shine';
+  hero.appendChild(shine);
+
+  // the four waiting in their yards, one to a corner
+  HERO_G.yards.forEach((y, a) => {
+    const slot = heroPc(y.slots[0]), size = HERO_G.slotSize * 100 / HERO_G.total;
+    const g = document.createElement('i');
+    g.className = 'hgoti';
+    g.style.left = slot.x + '%'; g.style.top = slot.y + '%';
+    g.style.width = (size * 1.15) + '%';
+    g.style.animationDelay = (0.95 + a * 0.11) + 's';
+    g.appendChild(heroPawn(a));
+    hero.appendChild(g);
+  });
+
+  /* The one that plays. Its box is the whole board, so what it moves by is measured
+     against the board and stays right whatever size the board is drawn at. */
+  const walk = document.createElement('i');
+  walk.className = 'walker';
+  const first = heroPc(HERO_G.track[HERO_G.start[0]]);
+  const pawn = heroPawn(0);
+  pawn.style.left = first.x + '%'; pawn.style.top = first.y + '%';
+  pawn.style.width = (HERO_G.slotSize * 115 / HERO_G.total) + '%';
+  walk.appendChild(pawn);
+  hero.appendChild(walk);
+
+  // the die, the same cube that gets thrown in a match
+  const die = document.createElement('div');
+  die.className = 'hdie';
+  die.innerHTML = heroDieMarkup();
+  hero.appendChild(die);
+
+  // the walk is written against this board's own track, so it ships with it
+  let sheet = document.getElementById('heroWalkCss');
+  if(!sheet){ sheet = document.createElement('style'); sheet.id = 'heroWalkCss'; document.head.appendChild(sheet); }
+  sheet.textContent = heroWalkFrames();
+}
+
+/* The die on the home screen is the one from the match: six faces around a solid core, so
+   the corners where three rounded faces meet do not read as chips out of it. It only ever
+   shows a six here - it is not being thrown, it is being admired. */
+function heroDieMarkup(){
+  const layout = {1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+  let html = '<div class="hk"><div class="dice">';
+  for(let f = 1; f <= 6; f++) html += `<div class="core k${f}"></div>`;
+  for(let f = 1; f <= 6; f++){
+    const pips = layout[FACE_PIPS[f]];
+    html += `<div class="face f${f}">`;
+    for(let i = 0; i < 9; i++) html += pips.includes(i) ? '<span><i></i></span>' : '<span></span>';
+    html += '</div>';
+  }
+  return html + '</div></div>';
+}
+
 function fitHero(){
   const wrap = document.querySelector('.hero-wrap'), hero = document.querySelector('.hero');
   if(!wrap || !hero) return;
@@ -1576,6 +1733,8 @@ function fitHero(){
   if(side < 40) return;
   hero.style.width = side + 'px';
   hero.style.height = side + 'px';
+  // the die is built at its real size and scaled, so it keeps its depth at any board size
+  hero.style.setProperty('--hk', (side * 0.115 / 64).toFixed(4));
 }
 
 function relayout(){
