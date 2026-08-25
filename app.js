@@ -2211,12 +2211,14 @@ function armBack(){
   catch(e){ canHoldBack = false; }
 }
 
-let quitArmed = 0;                       // when the home screen was last warned
-
 async function goBack(){
   // a dialog is the top-most thing there is: back shuts it and nothing else happens
   const openModal = document.querySelector('.overlay.show');
-  if(openModal){ openModal.classList.remove('show'); return true; }
+  if(openModal){
+    if(openModal.id === 'askModal') el('askNo').click();   // let it answer its own promise
+    else openModal.classList.remove('show');
+    return true;
+  }
 
   switch(atScreen){
     case 'account':
@@ -2239,16 +2241,13 @@ async function goBack(){
         toMenu();
       return true;
 
-    // the two screens with nothing of ours above them: twice, close together, or it was
-    // not meant. Saying so is the point - a press that does nothing at all reads as broken.
+    // the two screens with nothing of ours above them. There is nowhere further up to go,
+    // so the press can only mean leaving, and leaving is worth being asked about.
     case 'home':
-    case 'auth': {
-      const now = Date.now();
-      if(now - quitArmed < 2600) return false;      // let this one through: the app closes
-      quitArmed = now;
-      toast('Press back again to close the game');
-      return true;
-    }
+    case 'auth':
+      return !(await ask('Close the game?',
+                         'Your coins and level are saved. You can come straight back.',
+                         'Close', 'Stay', '🚪'));
   }
   return true;                                       // anywhere unnamed, simply stay
 }
