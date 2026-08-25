@@ -861,8 +861,26 @@ let atScreen = 'auth';
 const show = id => {
   atScreen = id;
   document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));
-  if(id === 'home' && typeof drawHero === 'function') drawHero();
+  if(id === 'home' && typeof drawHero === 'function'){
+    drawHero();
+    fitHero();                        // it is on the screen now, so now it can be measured
+    requestAnimationFrame(fitHero);   // and again once the rest of the page has settled
+    watchHero();                      // and from here on, whenever the room changes
+  }
 };
+/* Back on the main screen says what a second press would do. It has to say it and then
+   get out of the way on its own: a box with a button in it would have to be dismissed
+   first, and the second press is the whole point. */
+function backNote(msg){
+  document.querySelectorAll('.backnote').forEach(n => n.remove());
+  const n = document.createElement('div');
+  n.className = 'backnote';
+  n.innerHTML = '<span class="bn-emoji">\u{1F6AA}</span><span class="bn-text"></span>';
+  n.querySelector('.bn-text').textContent = msg;
+  document.body.appendChild(n);
+  setTimeout(() => n.remove(), 2600);
+}
+
 function toast(msg){
   document.querySelectorAll('.toast').forEach(t=>t.remove());
   const t=document.createElement('div'); t.className='toast'; t.textContent=msg;
@@ -1726,19 +1744,43 @@ function heroDieMarkup(){
   return html + '</div></div>';
 }
 
+const HERO_FRAME = 6;              // the plate's three pixel edge, on both sides
+
 function fitHero(){
   const wrap = document.querySelector('.hero-wrap'), hero = document.querySelector('.hero');
   if(!wrap || !hero) return;
-  const side = Math.floor(Math.min(wrap.clientWidth * 0.92, wrap.clientHeight * 0.9));
+  /* The logo shares this box with the board, so the room is what is left underneath it -
+     measured from the logo itself rather than from where it currently sits, because the
+     two are centred as a pair and a smaller board moves the logo down, which would move
+     the answer every time it was asked. */
+  const logo = wrap.querySelector('.logo');
+  let room = wrap.clientHeight;
+  if(logo){
+    const lm = getComputedStyle(logo);
+    room -= logo.offsetHeight + parseFloat(lm.marginTop || 0) + parseFloat(lm.marginBottom || 0);
+  }
+  const side = Math.floor(Math.min(wrap.clientWidth * 0.92, room * 0.96)) - HERO_FRAME;
   if(side < 40) return;
+  if(hero.style.width === side + 'px') return;    // nothing to do, and no loop to start
   hero.style.width = side + 'px';
   hero.style.height = side + 'px';
   // the die is built at its real size and scaled, so it keeps its depth at any board size
   hero.style.setProperty('--hk', (side * 0.115 / 64).toFixed(4));
 }
 
+let heroWatch = null;
+function watchHero(){
+  const wrap = document.querySelector('.hero-wrap');
+  if(!wrap || heroWatch || typeof ResizeObserver !== 'function') return;
+  heroWatch = new ResizeObserver(() => fitHero());
+  heroWatch.observe(wrap);
+}
+
 function relayout(){
   fitHero();
+  // a resize event can arrive before the page has finished moving, and the answer then is
+  // the old one. Asking again a frame later costs nothing and is the one that is right.
+  requestAnimationFrame(fitHero);
   const wrap = el('players');
   if(wrap && S) wrap.style.gridTemplateColumns = `repeat(${cardColumns()}, 1fr)`;
   fitBoard();
@@ -2211,6 +2253,8 @@ function armBack(){
   catch(e){ canHoldBack = false; }
 }
 
+let quitArmed = 0;                       // when the main screen was last warned
+
 async function goBack(){
   // a dialog is the top-most thing there is: back shuts it and nothing else happens
   const openModal = document.querySelector('.overlay.show');
@@ -2241,13 +2285,16 @@ async function goBack(){
         toMenu();
       return true;
 
-    // the two screens with nothing of ours above them. There is nowhere further up to go,
-    // so the press can only mean leaving, and leaving is worth being asked about.
+    // the two screens with nothing of ours above them: twice, close together, or it was
+    // not meant. Saying so is the point - a press that does nothing at all reads as broken.
     case 'home':
-    case 'auth':
-      return !(await ask('Close the game?',
-                         'Your coins and level are saved. You can come straight back.',
-                         'Close', 'Stay', '🚪'));
+    case 'auth': {
+      const now = Date.now();
+      if(now - quitArmed < 2600) return false;     // let this one through: the game closes
+      quitArmed = now;
+      backNote('Press back again to leave the game');
+      return true;
+    }
   }
   return true;                                       // anywhere unnamed, simply stay
 }
