@@ -12,7 +12,7 @@ import { join, extname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { hashPassword, checkPassword, newToken, checkCredentials } from './auth.js';
-import { findUser, createUser, loadProfile, saveProfile,
+import { findUser, createUser, loadProfile, saveProfile, addFeedback,
          createToken, useToken, killToken, sweepTokens, dbPath } from './db.js';
 import { createRoom, joinRoom, leaveRoom, attachStream, startGame,
          pushState, sendIntent, relaySignal, setVoice, sweepRooms, roomCount } from './rooms.js';
@@ -182,6 +182,25 @@ async function putProfile(req, res){
   send(res, 200, { ok: true });
 }
 
+/* ---------- what people write in ----------
+   Signed in or not: somebody who cannot get past the sign-in screen is exactly the person
+   with something to report. The same six-a-minute limit as the sign-in guards it, because
+   a box that posts to a database is a box somebody will eventually point a script at, and
+   two thousand characters is more than enough for anything worth reading. */
+
+async function feedback(req, res){
+  const ip = addressOf(req);
+  if(tooManyTries(ip)) return fail(res, 429, 'Too many messages — wait a minute.');
+
+  const { body } = await readJson(req);
+  if(typeof body !== 'string' || !body.trim()) return fail(res, 400, 'Write something first.');
+  if(body.length > 2000) return fail(res, 400, 'That is longer than we can keep — trim it a little.');
+
+  const user = whoIs(req);
+  addFeedback(user ? user.id : null, user ? user.username : null, body.trim());
+  send(res, 201, { ok: true });
+}
+
 /* ---------- the game's own files ----------
    Sitting in this folder next to the game are things no visitor may have: the database
    carries everyone's password hashes, and the server's own source is nobody's business.
@@ -239,6 +258,7 @@ const server = createServer(async (req, res) => {
       if(req.method === 'POST' && pathname === '/api/logout')   return logout(req, res);
       if(req.method === 'GET'  && pathname === '/api/profile')  return getProfile(req, res);
       if(req.method === 'PUT'  && pathname === '/api/profile')  return await putProfile(req, res);
+      if(req.method === 'POST' && pathname === '/api/feedback') return await feedback(req, res);
       if(req.method === 'GET'  && pathname === '/api/health')   return send(res, 200, { ok: true, rooms: roomCount() });
 
       /* ---- private rooms ---- */

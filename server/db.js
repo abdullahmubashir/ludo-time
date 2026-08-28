@@ -43,6 +43,17 @@ db.exec(`
   );
 
   CREATE INDEX IF NOT EXISTS tokens_user ON tokens(user_id);
+
+  -- what people write in from the settings page. user_id is allowed to be missing:
+  -- somebody signed out can still have something to say, and a note nobody can answer
+  -- is better than a note nobody could leave.
+  CREATE TABLE IF NOT EXISTS feedback (
+    id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id   INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    name      TEXT,
+    body      TEXT    NOT NULL,
+    created   INTEGER NOT NULL
+  );
 `);
 
 const q = {
@@ -54,6 +65,8 @@ const q = {
   putProfile:   db.prepare(`INSERT INTO profiles (user_id, data, updated) VALUES (?, ?, ?)
                             ON CONFLICT(user_id) DO UPDATE SET data = excluded.data,
                                                               updated = excluded.updated`),
+
+  addFeedback:  db.prepare('INSERT INTO feedback (user_id, name, body, created) VALUES (?, ?, ?, ?)'),
 
   addToken:     db.prepare('INSERT INTO tokens (token, user_id, created, seen) VALUES (?, ?, ?, ?)'),
   getToken:     db.prepare('SELECT * FROM tokens WHERE token = ?'),
@@ -99,6 +112,12 @@ export function useToken(token){
 }
 
 export function killToken(token){ q.dropToken.run(token); }
+
+/* Someone's note, kept as they wrote it. Nothing is read out of it and nothing is done
+   with it automatically - it sits in the file until a person opens it. */
+export function addFeedback(userId, name, body){
+  q.addFeedback.run(userId ?? null, name ?? null, body, Date.now());
+}
 
 export function sweepTokens(){ q.dropStale.run(Date.now() - TOKEN_LIFE); }
 

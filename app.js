@@ -1811,6 +1811,7 @@ function applyProfileSettings(){
   PROFILE.theme = PROFILE.theme || 'classic';
   PROFILE.owned = PROFILE.owned || ['classic'];
   PROFILE.music = PROFILE.music || 'mellow';
+  if(typeof PROFILE.sfx === 'boolean') sound = PROFILE.sfx;
   PROFILE.vol   = PROFILE.vol == null ? 70 : PROFILE.vol;
   applyTheme(PROFILE.theme);
   music.setVolume(PROFILE.vol/100);
@@ -1834,6 +1835,47 @@ document.addEventListener('pointerdown', armMusic, {once:false});
 const RULE_TEXT = [
   ['turnTimer'  , 'Turn timer · auto-move on expiry']
 ];
+
+/* Music and effects were only ever on the music page, which is somewhere you go to pick a
+   tune rather than somewhere you go to turn one off. They are here as well now, the same
+   two switches driving the same two things, so whichever page you opened is the right one.
+   Effects were also forgotten on every reload - a variable and nothing more - and being
+   asked twice for the same silence is its own small annoyance. */
+function paintSound(){
+  const wrap = el('setSound');
+  if(!wrap) return;
+  wrap.innerHTML = '';
+  const rows = [
+    // setMusic already does the lot: the profile, the buttons on the music page, the hint,
+    // the loop itself and the save. Turning it off remembers the tune, so turning it back
+    // on gives you the one you had rather than whatever the default is.
+    ['Music', () => !!(PROFILE && PROFILE.music && PROFILE.music !== 'off'), on => {
+      if(!PROFILE) return;
+      if(!on && PROFILE.music !== 'off') PROFILE.musicWas = PROFILE.music;
+      setMusic(on ? (PROFILE.musicWas || 'mellow') : 'off');
+    }],
+    ['Sound effects', () => sound, async on => {
+      sound = on;
+      el('soundBtn').textContent = sound ? '\u{1F50A}' : '\u{1F507}';
+      el('soundBtn').classList.toggle('off', !sound);
+      document.querySelectorAll('#segSfx button')
+              .forEach(b => b.classList.toggle('on', (b.dataset.v === 'on') === sound));
+      if(PROFILE){ PROFILE.sfx = sound; await saveProfile(); }
+    }]
+  ];
+  for(const [label, get, set] of rows){
+    const row = document.createElement('div');
+    row.className = 'rulerow';
+    row.innerHTML = `<span>${label}</span><i class="sw${get() ? ' on' : ''}"></i>`;
+    row.onclick = async () => {
+      const on = !get();
+      row.querySelector('.sw').classList.toggle('on', on);
+      sfx.tap && sfx.tap();
+      await set(on);
+    };
+    wrap.appendChild(row);
+  }
+}
 
 function paintRules(){
   const wrap = el('setRules');
@@ -1881,7 +1923,7 @@ async function pickTheme(id){
 }
 
 function openSettings(){
-  paintSwatches(); paintRules();
+  paintSwatches(); paintSound(); paintRules();
   el('setModal').classList.add('show');
 }
 
@@ -2218,6 +2260,39 @@ async function askMic(){
 }
 
 el('micBtn').onclick = toggleMic;
+
+/* ---------- writing in ----------
+   It posts to the server, which is the only place it could go: there is no address to mail
+   and nothing else running. Somebody signed out can still send one - the person who cannot
+   get past the sign-in screen is exactly the person with something to report - so the note
+   carries a name only when there is one to carry. */
+el('feedbackRow').onclick = () => {
+  el('fbText').value = ''; el('fbMsg').textContent = '';
+  el('fbSend').disabled = false; el('fbSend').textContent = 'SEND';
+  el('fbModal').classList.add('show');
+  setTimeout(() => el('fbText').focus(), 120);
+};
+
+el('privacyRow').onclick = () => {
+  el('privModal').querySelector('.policy').scrollTop = 0;
+  el('privModal').classList.add('show');
+};
+
+el('fbSend').onclick = async () => {
+  const body = el('fbText').value.trim();
+  if(!body){ el('fbMsg').textContent = 'Write something first.'; return; }
+  if(!serverUp){ el('fbMsg').textContent = 'This needs the server running.'; return; }
+
+  el('fbSend').disabled = true; el('fbSend').textContent = 'SENDING…';
+  try{
+    await api('/api/feedback', 'POST', { body });   // carries the sign-in token if there is one
+    el('fbModal').classList.remove('show');
+    toast('Thank you — it came through.');
+  }catch(e){
+    el('fbMsg').textContent = e.message;
+    el('fbSend').disabled = false; el('fbSend').textContent = 'SEND';
+  }
+};
 
 /* ---------- the buttons ---------- */
 
