@@ -168,9 +168,23 @@ function drawBoard(target, g){
   // yards: solid colour block with a white inner square
   g.yards.forEach((y,a)=>{
     const d=document.createElement('div'); d.className='yardbox';
-    d.style.background=`var(${CVAR[a]})`;
+    /* the colour only, not the whole background: naming the shorthand here wiped out the
+       sheen the stylesheet lays over the block, which is why the yards have been flat
+       colour all along rather than the soft blocks they were drawn as */
+    d.style.backgroundColor=`var(${CVAR[a]})`;
     d.dataset.a=a;
-    at(d,{x:y.cx,y:y.cy},g.yardSize,y.rot, g.total);
+    /* On a four-armed board a yard is a square sitting square in the corner, and the
+       turn it was being given - two hundred and seventy degrees for red, three hundred
+       and sixty for green, and so on - moved nothing at all. What it did move was the
+       light: the block is lit by a gradient at a hundred and fifty-five degrees and
+       casts its shadow straight down, and both of those turned with the box. So the
+       four corners were each lit from a different direction and each threw their shadow
+       a different way, and red - turned a quarter round - threw its one outward, which
+       is what makes a block look like it has slid off the edge.
+
+       Six-armed boards keep the turn. There a yard really does sit at an angle in its
+       wedge, and its resting spots were worked out with that angle in them. */
+    at(d,{x:y.cx,y:y.cy},g.yardSize, g.N===6 ? y.rot : undefined, g.total);
     d.innerHTML='<i></i>';
     target.appendChild(d);
   });

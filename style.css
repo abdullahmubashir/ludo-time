@@ -164,6 +164,14 @@ input::placeholder{color:#7d8fa4}
 
 /* ---- home: top bar, hero, big buttons ---- */
 .hbar{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex:none}
+/* Settings sits on the strip rather than in the row below, where it was one of three
+   things of equal weight and is not one of three things of equal weight. Same height and
+   the same dark fill as the coins beside it, so the strip reads as one piece. */
+.hgear{flex:none;align-self:stretch;width:46px;border-radius:14px;font-size:19px;
+  display:grid;place-items:center;line-height:1;
+  background:rgba(0,0,0,.34);border:1px solid rgba(255,255,255,.16)}
+.hgear:hover{background:rgba(0,0,0,.46)}
+.hgear:active{transform:translateY(1px)}
 .hprof{display:flex;align-items:center;gap:8px;flex:1;min-width:0;
   background:rgba(0,0,0,.34);border:1px solid rgba(255,255,255,.16);
   border-radius:16px;padding:6px 10px 6px 6px}
@@ -172,7 +180,11 @@ input::placeholder{color:#7d8fa4}
   font-size:20px;background:linear-gradient(150deg,#ffe08a,var(--gold));box-shadow:0 2px 0 #b9860f}
 .hprof .who{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
 .hprof .pn{font-weight:600;font-size:14px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-.hprof .lv{font-size:10.5px;color:#a3b6c9}
+/* One line, cut short if it has to be. The name above it was already told this; the line
+   under it was not, and once the gear took its width the pill grew to three lines on a
+   phone and the whole strip with it. */
+.hprof .lv{font-size:10.5px;color:#a3b6c9;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .hcoins{flex:none;font-weight:700;font-size:15px;color:var(--gold);
   background:rgba(0,0,0,.34);border:1px solid rgba(255,255,255,.16);
   border-radius:14px;padding:8px 11px}
@@ -259,7 +271,7 @@ input::placeholder{color:#7d8fa4}
 .big-btn .soon{position:absolute;top:8px;right:9px;font-size:9.5px;font-weight:800;letter-spacing:.1em;
   background:#fff;color:#1450b8;border-radius:6px;padding:3px 6px}
 
-.tray{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;flex:none}
+.tray{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:8px;flex:none}
 .tray-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:clamp(5px,1.1vh,9px) 4px;
   border-radius:15px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.15);font-size:19px}
 .tray-btn span{font-size:9.5px;font-weight:600;color:#c6d4e2;font-family:var(--body);white-space:nowrap}
@@ -557,8 +569,8 @@ input::placeholder{color:#6f688a}
 .big-btn{background:var(--panel);border:1px solid var(--hair);border-radius:16px;
   box-shadow:0 4px 14px rgba(0,0,0,.3)}
 .big-btn:hover{background:var(--panel-2)}
-.tray-btn{background:var(--panel);border:1px solid var(--hair);color:var(--muted-2)}
-.tray-btn:hover{background:var(--panel-2);color:var(--text)}
+.tray-btn,.hgear{background:var(--panel);border:1px solid var(--hair);color:var(--muted-2)}
+.tray-btn:hover,.hgear:hover{background:var(--panel-2);color:var(--text)}
 
 /* ---------- in a match ---------- */
 .pcard{background:var(--panel);border:1px solid var(--hair)}
@@ -1045,8 +1057,9 @@ input[type=text]:focus,input[type=password]:focus{border-color:var(--gold)}
 .big-btn .bt{font-size:clamp(13px,3.4vw,15.5px);line-height:1.1}
 .big-btn .bt small{font-size:11px}
 
-/* six small buttons in one row instead of five and a stray */
-.tray{grid-template-columns:repeat(6,1fr);gap:5px}
+/* This once said six, back when there were six. Counting them in the stylesheet means
+   counting them again every time one moves; the row divides itself by what is in it. */
+.tray{grid-template-columns:none;gap:7px}
 .tray-btn{padding:clamp(4px,.8vh,7px) 3px;border-radius:12px;font-size:16px}
 .tray-btn span{font-size:9px}
 
