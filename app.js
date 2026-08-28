@@ -1477,8 +1477,9 @@ paintFullscreen();
 
 /* ========== SHOP + MUSIC WIRING ========== */
 el('shopBtn').onclick=()=>{ renderShop(); el('shopModal').classList.add('show'); };
-el('musicBtn').onclick=()=>el('musicModal').classList.add('show');
-el('musicBtn2').onclick=()=>el('musicModal').classList.add('show');
+const openMusic = () => el('musicModal').classList.add('show');
+el('musicBtn2').onclick  = openMusic;      // on the board, mid-match
+el('musicMoreRow').onclick = openMusic;    // and on the settings page
 el('adCoinsBtn').onclick=async()=>{
   toast('Rewarded ad plays here in the Android build');
   PROFILE.coins += 100; await saveProfile(); renderShop();
@@ -1568,8 +1569,9 @@ el('profChip').onclick=()=>openSetup(true);
 })();
 
 el('playBtn').onclick=()=>newGame(cfgCount,cfgMode,PROFILE.name,cfgLen);
-el('howBtn').onclick=()=>el('howModal').classList.add('show');
-el('rulesBtn').onclick=()=>el('howModal').classList.add('show');
+const openHow = () => el('howModal').classList.add('show');
+el('rulesBtn').onclick = openHow;          // on the board, mid-match
+el('howRow').onclick   = openHow;          // and on the settings page
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>b.closest('.overlay').classList.remove('show'));
 el('rollBtn').onclick=rollDice;
 document.querySelector('.dice-stage').onclick=rollDice;
