@@ -202,9 +202,9 @@ input::placeholder{color:#7d8fa4}
 
 
 @media (prefers-reduced-motion:reduce){
-  .hero,.hero .cell,.hero .yardbox,.hero .slot,.hero .arw,.hero .hub,
-  .hero .plate,.shine,.hero .hgoti,.hero .walker,.hero .walker .hpawn,.hero .hdie{animation:none}
-  .shine,.hero .walker,.hero .hdie{opacity:0}
+  .hero,.hplane,.hero .cell,.hero .yardbox,.hero .slot,.hero .arw,.hero .hub,
+  .hero .plate,.hero .htok,.hero .hdie3{animation:none}
+  
 }
 #bigLogo{margin:0 0 -6px;flex:none;font-size:clamp(26px,8.5vw,50px);position:relative;z-index:2;
   display:flex;justify-content:center;gap:.01em;flex-wrap:wrap}
@@ -1124,34 +1124,43 @@ input[type=text]:focus,input[type=password]:focus{border-color:var(--gold)}
    away moments after landing */
 
 /* ========== THE BOARD ON THE HOME SCREEN ==========
-   There is nothing here that says what the board looks like, because it is the real board -
-   same geometry, same drawBoard, same cells and yards and arrows and middle. It used to be
-   a second board typed out by hand in svg, and a board drawn twice is a board that can
-   disagree with itself. It did.
+   Abdullah's design, built to his numbers.
 
-   What is left to say is only about the parts that move.
+   The stage holds the perspective; the plane inside it lies back fifty-two degrees and is
+   the only thing that does. Everything standing on that plane - all sixteen pieces and the
+   die - is turned fifty-two degrees the other way, which leaves them upright while the
+   ground under them is not. They have to be children of the plane rather than laid over
+   the top of it, because it is the plane's floor they stand on and the plane's perspective
+   they shrink into as they go further back.
 
-   The arrival is written with the individual transform properties - `translate` and
-   `scale` - rather than with `transform`. Every cell already carries a rotation put there
-   by the board code, and naming `transform` here would throw that rotation away and turn
-   every arrow and star square to face the wrong way.
+   None of the arrival is written with `transform`: the pieces carry their placing and
+   their counter-turn there already, and naming it in a keyframe would throw both away and
+   drop them flat on the board. `scale` and `opacity` are separate properties and compose
+   with what is already there. Every cell of the board has a rotation from the board code
+   for the same reason.
 
-   The walking piece sits in a box the size of the whole board, so what it moves by is
-   measured against the board and stays right at any size. Its squash on landing cannot go
-   on that box - scaling something board-sized drags the piece towards the middle of the
-   board rather than down onto its own feet - so the box carries the journey and the piece
-   carries the squash, on the same clock.
+   Depth is in pixels, because that is the only thing depth can be in - a percentage has
+   nothing to be a percentage of. So the slab's thickness and the die's shadow are scaled
+   against the board's measured size instead, through --hs. */
 
-   And the die is built at its real size and scaled to fit, because a cube's faces are
-   pushed apart in pixels and a percentage has no way to say how deep something is. */
+/* the stage: flat itself, holding the perspective everything inside is seen through */
+.hero{position:relative;transform-style:flat}
 
-.hero{position:relative;transform-style:preserve-3d;
-  animation:boardSway 11s cubic-bezier(.37,0,.63,1) infinite}
-@keyframes boardSway{
-  0%,100%{transform:rotateZ(-1.2deg) translateY(0)}
-  50%{transform:rotateZ(1.2deg) translateY(-8px)}}
+.hplane{position:absolute;left:0;width:100%;aspect-ratio:1;top:50%;
+  transform-style:preserve-3d;transform:translateY(-50%) rotateX(52deg);
+  animation:heroLean 11s cubic-bezier(.37,0,.63,1) infinite}
+@keyframes heroLean{
+  0%,100%{transform:translateY(-50%) rotateX(52deg) rotateZ(-.9deg)}
+  50%{transform:translateY(-50%) rotateX(52deg) rotateZ(.9deg)}}
 
-/* the board arrives in a wave from the top left, the plate first so nothing lands on air */
+/* the slab: what makes it a board on a table rather than a picture of one */
+.hslab{position:absolute;inset:0;border-radius:16px;
+  background:linear-gradient(180deg,#b9b3a3,#6f6a5e);
+  transform:translateZ(calc(-16px * var(--hs,.75)));
+  box-shadow:0 calc(30px * var(--hs,.75)) calc(60px * var(--hs,.75)) rgba(0,0,0,.65)}
+.hface{position:absolute;inset:0}
+
+/* the board arrives a piece at a time, in a wave from the far corner */
 .hero .plate{animation:heroPlate .45s ease-out both}
 .hero .cell,.hero .yardbox,.hero .slot,.hero .arw,.hero .hub{
   animation:heroPop .75s cubic-bezier(.22,1,.36,1) both}
@@ -1161,46 +1170,40 @@ input[type=text]:focus,input[type=password]:focus{border-color:var(--gold)}
   62%{opacity:1;translate:0 0;scale:1.02}
   100%{opacity:1;translate:0 0;scale:1}}
 
-/* the four waiting in their yards - the same piece that stands on the real board */
-.hero .hgoti{position:absolute;aspect-ratio:1;transform:translate(-50%,-50%);
-  pointer-events:none;z-index:3;
-  animation:heroLand .9s cubic-bezier(.25,.9,.3,1) both}
-.hero .hgoti svg,.hero .walker svg{width:100%;height:100%;display:block;overflow:visible}
-@keyframes heroLand{
-  0%{opacity:0;translate:0 -34px;scale:.6}
-  44%{opacity:1;translate:0 0;scale:1}
-  57%{opacity:1;translate:0 0;scale:1.14 .88}
-  71%{opacity:1;translate:0 -6px;scale:.97 1.03}
-  87%{opacity:1;translate:0 0;scale:1.02 .98}
-  100%{opacity:1;translate:0 0;scale:1}}
+/* a piece: a ball with a highlight, a tapered base, and a shadow on the ground */
+.hero .htok{position:absolute;width:4.6%;aspect-ratio:5.6/8;pointer-events:none;
+  transform-style:preserve-3d;transform-origin:50% 100%;
+  transform:translate(-50%,var(--ty,-58%)) rotateX(-52deg);
+  animation:heroStand .85s cubic-bezier(.25,.95,.3,1) both}
+.hero .htok > i{position:absolute;display:block}
+.hero .tk-sh{left:50%;bottom:0;transform:translateX(-50%);width:90%;height:9%;
+  border-radius:50%;
+  background:radial-gradient(ellipse at 50% 50%,rgba(0,0,0,.45),rgba(0,0,0,.18) 55%,transparent 75%)}
+.hero .tk-base{left:50%;bottom:5%;transform:translateX(-50%);width:80%;height:38%;
+  clip-path:polygon(30% 0,70% 0,100% 88%,96% 100%,4% 100%,0 88%);
+  background:linear-gradient(180deg,var(--tcl) 0%,var(--tc) 42%,var(--tcd) 100%)}
+.hero .tk-ball{left:50%;top:0;transform:translateX(-50%);width:78%;aspect-ratio:1;
+  border-radius:50%;
+  background:radial-gradient(circle at 34% 27%,#ffffff 1%,var(--tcl) 18%,var(--tc) 58%,var(--tcd) 100%);
+  box-shadow:inset -3px -4px 7px rgba(0,0,0,.3), 0 3px 4px rgba(0,0,0,.26)}
+.hero .tk-spec{left:32%;top:8%;width:15%;height:14%;border-radius:50%;
+  background:radial-gradient(circle,#ffffff 34%,rgba(255,255,255,.55) 58%,rgba(255,255,255,0) 78%)}
+/* it grows from its own feet, which is why the origin is at the bottom */
+@keyframes heroStand{
+  0%{opacity:0;scale:.55}
+  60%{opacity:1;scale:1.06}
+  100%{opacity:1;scale:1}}
 
-/* and the one that plays. heroWalk and heroHop are written by the script off this board's
-   own track, so the piece goes where a red piece actually goes */
-.hero .walker{position:absolute;inset:0;pointer-events:none;z-index:4;
-  will-change:transform;backface-visibility:hidden;
-  animation:heroWalk 11s linear infinite backwards,
-            heroWalkFade 11s linear infinite backwards}
-.hero .walker .hpawn{position:absolute;aspect-ratio:1;transform:translate(-50%,-50%);
-  transform-origin:50% 94%;
-  animation:heroHop 11s linear infinite backwards}
-@keyframes heroWalkFade{0%,29%{opacity:0}32.5%,94%{opacity:1}100%{opacity:0}}
-
-/* the die: the cube from the match, six to the front, resting in the corner */
-.hero .hdie{position:absolute;right:5%;bottom:4%;z-index:5;
-  width:calc(64px * var(--hk,.6));height:calc(64px * var(--hk,.6));
-  perspective:600px;backface-visibility:hidden;
-  animation:heroDie 11s cubic-bezier(.24,.9,.3,1) infinite backwards}
-.hero .hdie .hk{position:absolute;left:0;top:0;width:64px;height:64px;
-  transform:scale(var(--hk,.6));transform-origin:0 0}
-.hero .hdie .dice{transform:rotateY(-180deg)}
-@keyframes heroDie{
-  0%,76%{opacity:0;transform:translate3d(60%,0,0) rotate(-270deg) scale(.6)}
-  79%{opacity:1}
-  83%{opacity:1;transform:translate3d(0,0,0) rotate(0deg) scale(1.04)}
-  84.6%{opacity:1;transform:translate3d(0,0,0) rotate(0deg) scale(1.08,.93)}
-  86.5%{opacity:1;transform:translate3d(0,0,0) rotate(0deg) scale(1)}
-  94%{opacity:1;transform:translate3d(0,0,0) rotate(0deg) scale(1)}
-  100%{opacity:0;transform:translate3d(0,-10px,0) rotate(10deg) scale(.8)}}
+/* the die: the three faces you can see from above and to one side */
+.hero .hdie3{position:absolute;right:-13%;top:4%;width:16.2%;height:18.6%;z-index:60;
+  pointer-events:none;transform-origin:50% 100%;transform:rotateX(-52deg);
+  animation:heroDieIn 1s cubic-bezier(.24,.95,.3,1) .55s both}
+.hero .hdie3 svg{display:block;overflow:visible;
+  filter:drop-shadow(0 calc(10px * var(--hs,.75)) calc(9px * var(--hs,.75)) rgba(0,0,0,.45))}
+@keyframes heroDieIn{
+  0%{opacity:0;scale:.45}
+  62%{opacity:1;scale:1.07}
+  100%{opacity:1;scale:1}}
 
 /* A size the board can fall back on. The script measures it properly, but the script can
    only measure what is on the screen, and there is no reason for a board to have no width

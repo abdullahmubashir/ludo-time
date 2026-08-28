@@ -1591,160 +1591,123 @@ function toMenu(){
    one on its height - cannot agree on that: whichever bites leaves the other alone and
    the square comes out an oblong. Measured instead, from whichever of the two is smaller. */
 /* ========== THE BOARD ON THE HOME SCREEN ==========
-   It used to be drawn by hand in svg, a hundred and thirty rectangles with their corners
-   typed out one at a time, and a board drawn twice is a board that can disagree with
-   itself. It did: two starting squares sat a cell inside their own colour, and yellow's
-   and blue's runs home stopped a square short of the middle and ran on to the edge
-   instead. Nobody typed those wrong on purpose - that is simply what happens to a hundred
-   and thirty hand-placed numbers.
+   Abdullah designed this one, and it is his layout down to the numbers: the board laid
+   back fifty-two degrees on a slab you can see the thickness of, sixteen pieces standing
+   upright on it in the middle of a game somebody is winning, and a die the size of a fist
+   sitting off the top corner.
 
-   So it is the same board now, off the same geometry and through the same drawBoard, with
-   the same pieces standing on it. It cannot drift from the real one because it is not a
-   copy of it. What is added on top is only the part that moves: an arrival, a light across
-   the face, one piece walking its own track, and the die.
+   Two things are worth saying about how it is built.
 
-   The walking piece is wrapped in a box the size of the whole board, so the percentages it
-   moves by are percentages of the board rather than of itself. That is what lets the walk
-   be written once and still land on the right squares at any size. */
+   The board is the real one. It is not a picture of a board - drawBoard puts the same
+   cells and yards and arrows here that it puts in a match, off the same geometry, so this
+   cannot drift from the game the way a drawing would.
 
-const HERO_G = buildGeom(4);              // four arms, the same fifteen by fifteen
-const HERO_CYCLE = 11;                    // seconds - the stylesheet is on the same clock
-const HERO_WALK  = 6;                     // squares walked, out of the yard and along
+   And everything standing on the board is turned back the way the board was turned. The
+   board leans away by fifty-two degrees; every piece and the die lean towards you by the
+   same fifty-two, which leaves them upright while the ground under them is not. That is
+   the whole trick of the picture, and it is why they have to be children of the tilted
+   plane rather than sitting on top of it - they need its floor to stand on and its
+   perspective to shrink with as they go further back. */
 
-// where a board square sits, as a percentage of the board
-const heroPc = p => ({ x: p.x * 100 / HERO_G.total, y: p.y * 100 / HERO_G.total });
+const HERO_G    = buildGeom(4);          // four arms, the same fifteen by fifteen
+const HERO_TILT = 52;                    // degrees the board lies back
 
-function heroPawn(colour){
-  const s = document.createElement('span');
-  s.className = 'hpawn';
-  s.style.setProperty('--tc',  `var(${CVAR[colour]})`);
-  s.style.setProperty('--tcl', `var(${CVAR[colour]}l)`);
-  s.style.setProperty('--tcd', `var(${CVAR[colour]}d)`);
-  s.innerHTML = GOTI_SVG;
-  return s;
+/* Where the pieces stand, straight off the design: colour, row, column, and whether it is
+   still in its yard. A game caught midway - red barely out, blue all four running, green
+   nearly home. */
+const HERO_TOKENS = [
+  [0, 2.0,  2.0, 1], [0, 2.0,  4.0, 1], [0, 4.0,  2.0, 1], [0, 6.5,  4.5, 0],
+  [1, 2.0, 11.0, 1], [1, 4.0, 13.0, 1], [1, 5.5,  7.5, 0], [1, 3.5,  8.5, 0],
+  [3, 8.5,  1.5, 0], [3, 9.5,  6.5, 0], [3, 11.5, 8.5, 0], [3, 6.5,  2.5, 0],
+  [2, 8.5, 11.5, 0], [2, 6.5, 13.5, 0], [2, 13.5, 8.5, 0], [2, 11.0, 11.0, 1]
+];
+
+/* A piece: a ball with a highlight on it, a tapered base under it, and a shadow on the
+   ground. Four flat layers that read as one solid object once it is stood up. */
+function heroToken(colour, row, col, inYard, i){
+  const t = document.createElement('i');
+  t.className = 'htok';
+  t.style.left = (col / 15 * 100).toFixed(2) + '%';
+  t.style.top  = (row / 15 * 100).toFixed(2) + '%';
+  // further down the board means nearer the viewer, so it has to be drawn later
+  t.style.zIndex = 20 + Math.round(row);
+  t.style.setProperty('--ty', inYard ? '-50%' : '-58%');
+  t.style.setProperty('--tc',  `var(${CVAR[colour]})`);
+  t.style.setProperty('--tcl', `var(${CVAR[colour]}l)`);
+  t.style.setProperty('--tcd', `var(${CVAR[colour]}d)`);
+  t.style.animationDelay = (0.95 + i * 0.045).toFixed(3) + 's';
+  t.innerHTML = '<i class="tk-sh"></i><i class="tk-base"></i><i class="tk-ball"></i><i class="tk-spec"></i>';
+  return t;
 }
 
-/* The walk, written out as keyframes. The route is read off the real track, so the piece
-   goes where a red piece actually goes - out onto its starting square, along, and round
-   the corner - rather than wherever six equal steps happened to land it.
+/* The die, drawn as the three faces you can actually see from above and to one side. A
+   cube in a picture is a hexagon with a seam down the middle; the pips are placed by
+   walking each face's own two directions rather than by rotating anything, which is why
+   they sit flat on their faces instead of floating over them. */
+function heroDie(){
+  const PIP = {1:[4], 2:[0,8], 3:[0,4,8], 4:[0,2,6,8], 5:[0,2,4,6,8], 6:[0,2,3,5,6,8]};
+  const THIRD = [0.26, 0.5, 0.74];
+  const e = 90, cx = 0.8660 * e, cy = 0.5 * e;
+  const A = [0,0], B = [cx,cy], C = [0,2*cy], D = [-cx,cy];
+  const pt = p => p[0].toFixed(1) + ',' + p[1].toFixed(1);
+  const poly = (pts, fill, stroke) =>
+    `<polygon points="${pts.map(pt).join(' ')}" fill="${fill}" stroke="${stroke}" stroke-width="1"/>`;
 
-   A hop is a thrown object: sideways at a steady rate, and height on an arc that is quick
-   off the ground and slow at the top. Both of those live in the frames, and the animation
-   stays on linear, because an easing curve laid over the top only fights them. */
-function heroWalkFrames(){
-  const START = 33, END = 75;                       // the walk's share of the cycle
-  const SPAN  = (END - START) / HERO_WALK;
-  const LIFT  = 3.6;                                // height of the arc, in board percent
-  const FLIGHT = 0.68, SQUASH = 0.78, RECOVER = 0.88;
-
-  const way = [];
-  for(let k = 0; k <= HERO_WALK; k++)
-    way.push(heroPc(HERO_G.track[(HERO_G.start[0] + k) % HERO_G.TN]));
-  const home = way[0];
-
-  const f = n => n.toFixed(2);
-  const move = (p, lift) => `transform:translate(${f(p.x - home.x)}%,${f(p.y - home.y + lift)}%)`;
-  // the piece is centred on its square by a transform of its own, so the squash goes on
-  // the individual `scale` property - naming `transform` here would wipe the centring out
-  const hop  = (sx, sy) => `scale:${f(sx)} ${f(sy)}`;
-
-  const travel = [`0%,${f(START)}%{${move(home, 0)}}`];
-  const squash = [`0%,${f(START)}%{${hop(1, 1)}}`];
-
-  for(let h = 0; h < HERO_WALK; h++){
-    const a = way[h], b = way[h + 1], base = START + h * SPAN;
-    for(const u of [0.10, 0.22, 0.35, 0.50, 0.65, 0.80, 0.92, 1.00]){
-      const pc = f(base + SPAN * FLIGHT * u);
-      travel.push(`${pc}%{${move({ x: a.x + (b.x - a.x) * u, y: a.y + (b.y - a.y) * u },
-                                 -LIFT * Math.sin(Math.PI * u))}}`);
-      const s = u < 0.35 ? (1 - u / 0.35) * 0.045 : 0;    // a stretch leaving the ground
-      squash.push(`${pc}%{${hop(1 - s, 1 + s)}}`);
+  const face = (val, origin, ux, uy, vx, vy, fill) => {
+    const on = new Set(PIP[val] || []);
+    let out = '';
+    for(let i = 0; i < 9; i++){
+      if(!on.has(i)) continue;
+      const fx = THIRD[i % 3], fy = THIRD[Math.floor(i / 3)];
+      out += `<ellipse cx="${(origin[0] + ux*fx + vx*fy).toFixed(1)}" cy="${(origin[1] + uy*fx + vy*fy).toFixed(1)}" rx="7" ry="7" fill="${fill}"/>`;
     }
-    travel.push(`${f(base + SPAN * SQUASH)}%{${move(b, 0)}}`);
-    travel.push(`${f(base + SPAN)}%{${move(b, 0)}}`);
-    squash.push(`${f(base + SPAN * SQUASH)}%{${hop(1.09, 0.91)}}`);    // it gives a touch
-    squash.push(`${f(base + SPAN * RECOVER)}%{${hop(0.98, 1.02)}}`);   // and comes back up
-    squash.push(`${f(base + SPAN)}%{${hop(1, 1)}}`);                   // and waits
-  }
+    return out;
+  };
 
-  const last = way[HERO_WALK];
-  travel.push(`${f(END)}%,94%{${move(last, 0)}}`);
-  travel.push(`100%{${move(last, 1.8)}}`);
-  squash.push(`${f(END)}%,94%{${hop(1, 1)}}`);
-  squash.push(`100%{${hop(0.9, 0.9)}}`);
-
-  return `@keyframes heroWalk{${travel.join('')}}@keyframes heroHop{${squash.join('')}}`;
+  const d = document.createElement('div');
+  d.className = 'hdie3';
+  d.innerHTML =
+    '<svg viewBox="-95 -14 190 220" width="100%" height="100%">' +
+      '<ellipse cx="0" cy="188" rx="66" ry="13" fill="rgba(0,0,0,.25)"/>' +
+      poly([A,B,C,D], '#fbf7ea', '#e6dcc0') +
+      poly([D,C,[0,2*cy+e],[-cx,cy+e]], '#e4dbc4', '#d3c8a8') +
+      poly([B,C,[0,2*cy+e],[ cx,cy+e]], '#cdc2a2', '#bcb08c') +
+      face(5, A, cx, cy, -cx, cy, '#2a2340') +
+      face(4, D, cx, cy,   0,  e, '#2a2340') +
+      face(6, B, -cx, cy,  0,  e, '#3a3450') +
+    '</svg>';
+  return d;
 }
 
 function drawHero(){
   const hero = document.querySelector('.hero');
   if(!hero) return;
+  hero.innerHTML = '';
 
-  drawBoard(hero, HERO_G);                 // the real board, from the real code
+  const plane = document.createElement('div'); plane.className = 'hplane';
+  const slab  = document.createElement('div'); slab.className  = 'hslab';
+  const face  = document.createElement('div'); face.className  = 'hface';
+  plane.appendChild(slab);
+  plane.appendChild(face);
+  hero.appendChild(plane);
 
-  /* Each part arrives on its own beat, in a wave from the top left. The plate underneath
-     goes first, or the pieces would land on nothing. */
-  const SPREAD = 0.7;                      // seconds between the first arrival and the last
-  hero.querySelectorAll('.cell,.yardbox,.slot,.arw,.hub').forEach(n => {
+  drawBoard(face, HERO_G);                 // the real board, from the real code
+
+  /* the board arrives a piece at a time, in a wave from the far corner */
+  const SPREAD = 0.7;
+  face.querySelectorAll('.cell,.yardbox,.slot,.arw,.hub').forEach(n => {
     const x = parseFloat(n.style.left) || 0, y = parseFloat(n.style.top) || 0;
     n.style.animationDelay = ((x + y) / 200 * SPREAD).toFixed(3) + 's';
   });
 
-  const shine = document.createElement('i'); shine.className = 'shine';
-  hero.appendChild(shine);
+  HERO_TOKENS.forEach(([c, r, col, inYard], i) =>
+    plane.appendChild(heroToken(c, r, col, inYard, i)));
 
-  // the four waiting in their yards, one to a corner
-  HERO_G.yards.forEach((y, a) => {
-    const slot = heroPc(y.slots[0]), size = HERO_G.slotSize * 100 / HERO_G.total;
-    const g = document.createElement('i');
-    g.className = 'hgoti';
-    g.style.left = slot.x + '%'; g.style.top = slot.y + '%';
-    g.style.width = (size * 1.15) + '%';
-    g.style.animationDelay = (0.95 + a * 0.11) + 's';
-    g.appendChild(heroPawn(a));
-    hero.appendChild(g);
-  });
-
-  /* The one that plays. Its box is the whole board, so what it moves by is measured
-     against the board and stays right whatever size the board is drawn at. */
-  const walk = document.createElement('i');
-  walk.className = 'walker';
-  const first = heroPc(HERO_G.track[HERO_G.start[0]]);
-  const pawn = heroPawn(0);
-  pawn.style.left = first.x + '%'; pawn.style.top = first.y + '%';
-  pawn.style.width = (HERO_G.slotSize * 115 / HERO_G.total) + '%';
-  walk.appendChild(pawn);
-  hero.appendChild(walk);
-
-  // the die, the same cube that gets thrown in a match
-  const die = document.createElement('div');
-  die.className = 'hdie';
-  die.innerHTML = heroDieMarkup();
-  hero.appendChild(die);
-
-  // the walk is written against this board's own track, so it ships with it
-  let sheet = document.getElementById('heroWalkCss');
-  if(!sheet){ sheet = document.createElement('style'); sheet.id = 'heroWalkCss'; document.head.appendChild(sheet); }
-  sheet.textContent = heroWalkFrames();
+  plane.appendChild(heroDie());
 }
 
-/* The die on the home screen is the one from the match: six faces around a solid core, so
-   the corners where three rounded faces meet do not read as chips out of it. It only ever
-   shows a six here - it is not being thrown, it is being admired. */
-function heroDieMarkup(){
-  const layout = {1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
-  let html = '<div class="hk"><div class="dice">';
-  for(let f = 1; f <= 6; f++) html += `<div class="core k${f}"></div>`;
-  for(let f = 1; f <= 6; f++){
-    const pips = layout[FACE_PIPS[f]];
-    html += `<div class="face f${f}">`;
-    for(let i = 0; i < 9; i++) html += pips.includes(i) ? '<span><i></i></span>' : '<span></span>';
-    html += '</div>';
-  }
-  return html + '</div></div>';
-}
-
-const HERO_FRAME = 6;              // the plate's three pixel edge, on both sides
+const HERO_FRAME = 6;
+const HERO_SCENE_W = 1.20, HERO_SCENE_H = 0.76;   // how the tilted scene sits in its box              // the plate's three pixel edge, on both sides
 
 function fitHero(){
   const wrap = document.querySelector('.hero-wrap'), hero = document.querySelector('.hero');
@@ -1759,13 +1722,24 @@ function fitHero(){
     const lm = getComputedStyle(logo);
     room -= logo.offsetHeight + parseFloat(lm.marginTop || 0) + parseFloat(lm.marginBottom || 0);
   }
-  const side = Math.floor(Math.min(wrap.clientWidth * 0.92, room * 0.96)) - HERO_FRAME;
+  /* A board lying back fifty-two degrees is not the shape of its own box. Perspective
+     throws the near edge wide, so it draws about a fifth wider than the box, and the
+     lean takes roughly a third off the height. Measuring the box as a square left a
+     hand of empty space above and below it and pushed the buttons down for nothing. */
+  const byWidth  = wrap.clientWidth * 0.96 / HERO_SCENE_W;
+  const byHeight = room * 0.98 / HERO_SCENE_H;
+  const side = Math.floor(Math.min(byWidth, byHeight)) - HERO_FRAME;
   if(side < 40) return;
   if(hero.style.width === side + 'px') return;    // nothing to do, and no loop to start
   hero.style.width = side + 'px';
-  hero.style.height = side + 'px';
-  // the die is built at its real size and scaled, so it keeps its depth at any board size
-  hero.style.setProperty('--hk', (side * 0.115 / 64).toFixed(4));
+  hero.style.height = Math.round(side * HERO_SCENE_H) + 'px';
+  /* Depth is in pixels and can be nothing else - a percentage has nothing to be a
+     percentage of. So the slab thickness, the shadows and the distance the scene is
+     viewed from are all scaled against the size just measured. The design was drawn at
+     four hundred and seventy across; --hs is how much of that this board is. */
+  hero.style.setProperty('--hs', (side / 470).toFixed(4));
+  hero.style.perspective = Math.round(side * 2.34) + 'px';
+  hero.style.perspectiveOrigin = '50% 42%';
 }
 
 let heroWatch = null;
