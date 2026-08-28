@@ -1645,21 +1645,27 @@ const HERO_TOKENS = [
   { c:2, at:[11.5,  8.5] }, { c:2, at:[13.5,  6.5] }, { c:2, at:[ 8.5, 13.5] }, { c:2, slot:2 }
 ];
 
-/* A piece: a ball with a highlight on it, a tapered base under it, and a shadow on the
-   ground. Four flat layers that read as one solid object once it is stood up. */
-function heroToken(colour, row, col, inYard, i){
+/* A piece. Not a drawing of one - the same GOTI_SVG that stands on the board in a match,
+   reading the same three colour variables, so the two cannot look like different games.
+   The design drew its own out of four stacked layers, which was the right way to do it
+   in a poster and the wrong way here, where a real one already exists. */
+function heroToken(colour, row, col, inYard){
   const t = document.createElement('i');
   t.className = 'htok';
   t.style.left = (col / 15 * 100).toFixed(2) + '%';
   t.style.top  = (row / 15 * 100).toFixed(2) + '%';
   // further down the board means nearer the viewer, so it has to be drawn later
   t.style.zIndex = 20 + Math.round(row);
-  t.style.setProperty('--ty', inYard ? '-50%' : '-58%');
+  /* A piece standing on a square has to have its feet on that square, not its middle. The
+     drawing's ground line sits at about ninety-three percent of its height - that is where
+     the shadow under it is - so that is what goes over the middle of the square. One in a
+     yard stands a touch lower, the way the design has it, because it is resting rather
+     than part-way round. */
+  t.style.setProperty('--ty', inYard ? '-85%' : '-93%');
   t.style.setProperty('--tc',  `var(${CVAR[colour]})`);
   t.style.setProperty('--tcl', `var(${CVAR[colour]}l)`);
   t.style.setProperty('--tcd', `var(${CVAR[colour]}d)`);
-  t.style.animationDelay = (0.95 + i * 0.045).toFixed(3) + 's';
-  t.innerHTML = '<i class="tk-sh"></i><i class="tk-base"></i><i class="tk-ball"></i><i class="tk-spec"></i>';
+  t.innerHTML = GOTI_SVG;
   return t;
 }
 
@@ -1716,17 +1722,10 @@ function drawHero(){
 
   drawBoard(face, HERO_G);                 // the real board, from the real code
 
-  /* the board arrives a piece at a time, in a wave from the far corner */
-  const SPREAD = 0.7;
-  face.querySelectorAll('.cell,.yardbox,.slot,.arw,.hub').forEach(n => {
-    const x = parseFloat(n.style.left) || 0, y = parseFloat(n.style.top) || 0;
-    n.style.animationDelay = ((x + y) / 200 * SPREAD).toFixed(3) + 's';
-  });
-
-  HERO_TOKENS.forEach((t, i) => {
+  HERO_TOKENS.forEach(t => {
     const inYard = t.slot !== undefined;
     const p = inYard ? HERO_G.yards[t.c].slots[t.slot] : { x: t.at[0], y: t.at[1] };
-    plane.appendChild(heroToken(t.c, p.y, p.x, inYard, i));
+    plane.appendChild(heroToken(t.c, p.y, p.x, inYard));
   });
 
   plane.appendChild(heroDie());
