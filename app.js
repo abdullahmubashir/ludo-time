@@ -1530,13 +1530,30 @@ el('profChip').onclick=()=>openSetup(true);
 (function buildLogo(){
   const host=el('bigLogo'); if(!host) return;
   host.innerHTML='';
-  'LUDO TIME'.split('').forEach((ch,i)=>{
-    if(ch===' '){ const g=document.createElement('span'); g.className='gap'; host.appendChild(g); return; }
-    const b=document.createElement('b');
-    b.textContent=ch;
-    b.style.animationDelay=(i*0.09)+'s';
-    host.appendChild(b);
+
+  /* Four letters over one word, which is how Abdullah drew it: LUDO big and blocked out
+     in the four players' colours, TIME small and gold underneath. The colours are not
+     in play order - blue, red, green, yellow - and each letter leans the opposite way
+     to the one before it. */
+  const ORDER = [3, 0, 1, 2];
+  const ludo = document.createElement('span');
+  ludo.className = 'lt-ludo';
+  'LUDO'.split('').forEach((ch, i) => {
+    const b = document.createElement('b');
+    b.textContent = ch;
+    b.style.setProperty('--c',  `var(${CVAR[ORDER[i]]})`);
+    b.style.setProperty('--cd', `var(${CVAR[ORDER[i]]}d)`);
+    b.style.setProperty('--rot', (i % 2 ? 4 : -4) + 'deg');
+    b.style.animationDelay = (i * 0.11) + 's';
+    ludo.appendChild(b);
   });
+
+  const time = document.createElement('span');
+  time.className = 'lt-time';
+  time.textContent = 'TIME';
+
+  host.appendChild(ludo);
+  host.appendChild(time);
 })();
 
 el('playBtn').onclick=()=>newGame(cfgCount,cfgMode,PROFILE.name,cfgLen);
@@ -1615,11 +1632,17 @@ const HERO_TILT = 52;                    // degrees the board lies back
 /* Where the pieces stand, straight off the design: colour, row, column, and whether it is
    still in its yard. A game caught midway - red barely out, blue all four running, green
    nearly home. */
+/* A piece in a yard sits on one of that yard's four slots, and a piece on the track sits
+   on a square, and both of those are things the board itself knows where they are. The
+   design named them on a grid it had drawn for itself, which put every one of the six in
+   a yard a third of a square out - close enough to look placed, far enough to look wrong.
+   Asking the board instead cannot be off, because it is the same answer the board used
+   when it drew the slot underneath. */
 const HERO_TOKENS = [
-  [0, 2.0,  2.0, 1], [0, 2.0,  4.0, 1], [0, 4.0,  2.0, 1], [0, 6.5,  4.5, 0],
-  [1, 2.0, 11.0, 1], [1, 4.0, 13.0, 1], [1, 5.5,  7.5, 0], [1, 3.5,  8.5, 0],
-  [3, 8.5,  1.5, 0], [3, 9.5,  6.5, 0], [3, 11.5, 8.5, 0], [3, 6.5,  2.5, 0],
-  [2, 8.5, 11.5, 0], [2, 6.5, 13.5, 0], [2, 13.5, 8.5, 0], [2, 11.0, 11.0, 1]
+  { c:0, slot:1 }, { c:0, slot:3 }, { c:0, slot:0 }, { c:0, at:[ 4.5,  6.5] },
+  { c:1, slot:0 }, { c:1, slot:3 }, { c:1, at:[ 7.5,  5.5] }, { c:1, at:[ 8.5,  3.5] },
+  { c:3, at:[ 1.5,  8.5] }, { c:3, at:[ 6.5,  9.5] }, { c:3, at:[ 8.5, 11.5] }, { c:3, at:[ 2.5,  6.5] },
+  { c:2, at:[11.5,  8.5] }, { c:2, at:[13.5,  6.5] }, { c:2, at:[ 8.5, 13.5] }, { c:2, slot:2 }
 ];
 
 /* A piece: a ball with a highlight on it, a tapered base under it, and a shadow on the
@@ -1700,8 +1723,11 @@ function drawHero(){
     n.style.animationDelay = ((x + y) / 200 * SPREAD).toFixed(3) + 's';
   });
 
-  HERO_TOKENS.forEach(([c, r, col, inYard], i) =>
-    plane.appendChild(heroToken(c, r, col, inYard, i)));
+  HERO_TOKENS.forEach((t, i) => {
+    const inYard = t.slot !== undefined;
+    const p = inYard ? HERO_G.yards[t.c].slots[t.slot] : { x: t.at[0], y: t.at[1] };
+    plane.appendChild(heroToken(t.c, p.y, p.x, inYard, i));
+  });
 
   plane.appendChild(heroDie());
 }
@@ -1726,8 +1752,8 @@ function fitHero(){
      throws the near edge wide, so it draws about a fifth wider than the box, and the
      lean takes roughly a third off the height. Measuring the box as a square left a
      hand of empty space above and below it and pushed the buttons down for nothing. */
-  const byWidth  = wrap.clientWidth * 0.96 / HERO_SCENE_W;
-  const byHeight = room * 0.98 / HERO_SCENE_H;
+  const byWidth  = wrap.clientWidth * 0.82 / HERO_SCENE_W;
+  const byHeight = room * 0.88 / HERO_SCENE_H;
   const side = Math.floor(Math.min(byWidth, byHeight)) - HERO_FRAME;
   if(side < 40) return;
   if(hero.style.width === side + 'px') return;    // nothing to do, and no loop to start
