@@ -470,6 +470,7 @@ const amHost = () => !ROOM.playing || ROOM.host === ROOM.playerId;
 
 function startTurn(){
   if(S.over || !amHost()) return;
+  lastClockKey = '';                     // a fresh turn: let the guests' clocks restart too
   S.rolled=false; S.dice=0;
   updateTurnUI(); highlight([]);
   el('rollBtn').disabled = !myTurn();
@@ -511,6 +512,8 @@ function startTimer(){
 // called on the way out of a match, and once from a screen where no match ever started
 function stopTimer(){
   clearInterval(timerId);
+  timerId = null;                  // the same reason startTimer clears it: a number left
+                                   // behind reads as a clock that is still running
   if(!S) return;
   const b=el('tm'+S.turnAt); if(b) b.style.width='0%';
 }
@@ -1990,7 +1993,9 @@ let shownOnline = false, lastShownDice = 0;
 
 function snapshot(){
   return { tk:S.players.map(p => p.tokens.slice()), rk:S.players.map(p => p.rank),
-           turnAt:S.turnAt, dice:S.dice, rolled:S.rolled, over:S.over, sixes:S.sixes };
+           turnAt:S.turnAt, dice:S.dice, rolled:S.rolled, over:S.over, sixes:S.sixes,
+           // whose clock is running the room is the host's business, not each guest's
+           clock:!!RULES.turnTimer };
 }
 function pushRoomState(){
   if(!ROOM.playing || !amHost() || !S) return;
@@ -1999,6 +2004,12 @@ function pushRoomState(){
 function askHost(intent){
   roomApi('intent', { code:ROOM.code, playerId:ROOM.playerId, intent }).catch(()=>{});
 }
+
+/* Which turn the clock is counting, as far as a guest can tell. The host starts one at
+   the top of a turn, again when a throw leaves somebody a choice to make, and again when
+   a six buys another go - and all three of those show up here as a change in whose turn
+   it is or whether they have thrown yet. */
+let lastClockKey = '';
 
 function applyRoomState(x){
   if(!S) return;
@@ -2015,6 +2026,26 @@ function applyRoomState(x){
   }
   S.dice = x.dice;
   if(!x.rolled) lastShownDice = 0;
+
+  /* A guest never ran a clock at all. startTurn is the host's alone - it is what decides
+     things - and it is where the clock was started, so on every other screen in the room
+     the ring under the die sat still and the bar under the card stayed empty. Nobody but
+     the host could see whose turn was running out, which is no use at all: the person who
+     most needs to see the clock is the one being timed by it.
+
+     So each screen runs its own copy for the look of it, restarted whenever the host's
+     board says a new one would have started. Only the host acts when it ends - autoPlay
+     turns straight round on anyone else - so there is still one clock that decides and
+     four that merely show. They drift a little apart over eighteen seconds; nothing rests
+     on the difference. */
+  if(RULES.turnTimer !== !!x.clock && x.clock !== undefined){
+    RULES.turnTimer = !!x.clock;               // the room runs on the host's setting
+  }
+  const clockKey = S.over ? 'over' : S.turnAt + ':' + (S.rolled ? 1 : 0);
+  if(clockKey !== lastClockKey){
+    lastClockKey = clockKey;
+    if(S.over) stopTimer(); else startTimer();
+  }
 
   renderTokens(); paintCards();
   S.players.forEach((_,i) => el('pc'+i).classList.toggle('turn', i === S.turnAt));
