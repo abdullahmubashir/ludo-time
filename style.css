@@ -643,8 +643,20 @@ input::placeholder{color:#6f688a}
 
 /* ---------- settings ---------- */
 .swatches{display:flex;gap:9px;flex-wrap:wrap}
+/* A swatch is a board in miniature: the room colour behind it, the board face on top of
+   that with the four players in its corners, and the theme's gold around the face. It
+   used to be painted with the board cream alone, and every theme has near enough the
+   same cream, so six different boards showed up as six identical pale squares. */
 .swatch{width:46px;height:46px;border-radius:11px;border:2px solid transparent;
-  box-shadow:0 2px 6px rgba(0,0,0,.4);transition:.15s}
+  box-shadow:0 2px 6px rgba(0,0,0,.4);transition:.15s;
+  background:var(--sw-room,#241f3d);display:grid;place-items:center;padding:0}
+.swatch i{width:64%;height:64%;border-radius:5px;box-shadow:0 0 0 1.5px var(--sw-gold,#e4a32b);
+  background:
+    radial-gradient(circle at 23% 23%,var(--p0) 0 27%,transparent 28%),
+    radial-gradient(circle at 77% 23%,var(--p1) 0 27%,transparent 28%),
+    radial-gradient(circle at 77% 77%,var(--p2) 0 27%,transparent 28%),
+    radial-gradient(circle at 23% 77%,var(--p3) 0 27%,transparent 28%),
+    var(--sw-cell,#fbf7ea)}
 .swatch:hover{transform:translateY(-2px)}
 .swatch.on{border-color:var(--gold);box-shadow:0 0 0 2px rgba(228,163,43,.3)}
 .swatch.locked{opacity:.42}

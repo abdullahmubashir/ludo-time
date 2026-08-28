@@ -496,7 +496,11 @@ function startTimer(){
   // clearInterval stops the clock but leaves its number behind, which reads as still running
   timerId = null;
   if(S) setDieClock(S.turnAt, 1);
-  if(cur().cpu || !RULES.turnTimer) return;
+  /* The computer gets a clock too. It never runs one down - it plays inside a second - but
+     a ring that only appears on some turns reads as a fault, and the point of the ring is
+     that everybody can see whose turn is running out. Everybody includes the turns that
+     are not going to. */
+  if(!RULES.turnTimer) return;
   const bar=el('tm'+S.turnAt); let t=0; const LIMIT=18000;
   timerId=setInterval(()=>{
     t+=100; bar.style.width=(t/LIMIT*100)+'%';
@@ -584,7 +588,7 @@ function doRoll(){
 function afterRoll(v){
   const p=cur();
   S.sixes = v===6 ? S.sixes+1 : 0;
-  if(RULES.threeSixes && S.sixes===3){
+  if(S.sixes===3){
     updateTurnUI('Three sixes — turn passes');
     beep(200,.3,'sawtooth',.14); S.sixes=0;
     setTimeout(nextTurn,900); return;
@@ -636,17 +640,21 @@ function pathClear(p,from,v){
 }
 
 /* ========== HOUSE RULES ==========
-   Every table plays ludo slightly differently and everyone is certain their way is the
-   real one. All four are on by default, which is the game as most people learned it. */
-const RULES = { sixToLeave:true, threeSixes:true, exactFinish:true, turnTimer:true };
+   Three of these used to be switches and are now simply how the game is played: a piece
+   leaves its yard on a six and on nothing else, three sixes in a row cost you the turn,
+   and a piece goes home on the exact count or does not go. Every table argues about these
+   and this table has settled them, which is one fewer thing to explain to a stranger and
+   one fewer way for two people in the same match to think they agreed on something. What
+   is left is the clock, because that is about the people playing rather than the game. */
+const RULES = { turnTimer:true };
 
 function legalMoves(p,v){
   const out=[];
   p.tokens.forEach((pos,i)=>{
-    if(pos===-1){ if((!RULES.sixToLeave || v===6) && pathClear(p,-1,v)) out.push(i); return; }
+    // out of the yard on a six and nothing else
+    if(pos===-1){ if(v===6 && pathClear(p,-1,v)) out.push(i); return; }
     if(pos===G.LAST) return;
-    // with the exact roll off, an overshoot walks the piece home instead of wasting the turn
-    if(pos+v>G.LAST && !RULES.exactFinish && pathClear(p,pos,G.LAST-pos)){ out.push(i); return; }
+    // and home on the exact count: a throw bigger than the gap is a throw with nowhere to go
     if(pos+v<=G.LAST && pathClear(p,pos,v)) out.push(i);
   });
   return out;
@@ -1792,7 +1800,10 @@ el('setBtn').onclick = openSettings;
 
 function applyProfileSettings(){
   // a player's own house rules travel with their profile
-  if(PROFILE && PROFILE.rules) Object.assign(RULES, PROFILE.rules);
+  // a profile saved before those three settled still carries them; take only what is asked
+  if(PROFILE && PROFILE.rules)
+    for(const [key] of RULE_TEXT)
+      if(key in PROFILE.rules) RULES[key] = !!PROFILE.rules[key];
   if(!PROFILE) return;
   PROFILE.theme = PROFILE.theme || 'classic';
   PROFILE.owned = PROFILE.owned || ['classic'];
@@ -1818,9 +1829,6 @@ document.addEventListener('pointerdown', armMusic, {once:false});
    so a player's table stays their table on whatever phone they pick up. */
 
 const RULE_TEXT = [
-  ['sixToLeave' , 'Leave yard on a 6 only'],
-  ['threeSixes' , 'Three 6s forfeit turn'],
-  ['exactFinish', 'Exact roll to finish'],
   ['turnTimer'  , 'Turn timer · auto-move on expiry']
 ];
 
@@ -1848,7 +1856,15 @@ function paintSwatches(){
     const owned = !PROFILE || (PROFILE.owned || ['classic']).includes(t.id);
     const b = document.createElement('button');
     b.className = 'swatch' + (PROFILE && PROFILE.theme === t.id ? ' on' : '') + (owned ? '' : ' locked');
-    b.style.background = t.chip;
+    /* It was painted with the board's cream, which every theme has a near-identical shade
+       of, so six different boards showed up as six identical pale squares. A theme changes
+       the room it is played in, the face of the board and the gold on it - so the swatch is
+       a little board: that room behind it, that face on top, that gold around it. */
+    b.style.setProperty('--sw-room', t.swatch);
+    b.style.setProperty('--sw-cell', t.v['--cell']);
+    b.style.setProperty('--sw-edge', t.v['--edge']);
+    b.style.setProperty('--sw-gold', t.v['--gold']);
+    b.innerHTML = '<i></i>';
     b.title = t.name + (owned ? '' : ` · ${t.price} coins`);
     b.onclick = () => { owned ? pickTheme(t.id) : (renderShop(), el('shopModal').classList.add('show')); };
     wrap.appendChild(b);
@@ -1863,19 +1879,9 @@ async function pickTheme(id){
 
 function openSettings(){
   paintSwatches(); paintRules();
-  document.querySelectorAll('#segVoice button').forEach(b =>
-    b.classList.toggle('on', b.dataset.v === (PROFILE && PROFILE.voiceMode || 'ptt')));
   el('setModal').classList.add('show');
 }
 
-document.querySelectorAll('#segVoice button').forEach(b => b.onclick = async () => {
-  document.querySelectorAll('#segVoice button').forEach(x => x.classList.remove('on'));
-  b.classList.add('on');
-  if(PROFILE){ PROFILE.voiceMode = b.dataset.v; await saveProfile(); }
-  // open mic means the line stays live; push-to-talk goes quiet the moment it is let go
-  if(VOICE.on) setMic(b.dataset.v === 'open');
-  el('pttBtn').style.display = (VOICE.on && b.dataset.v !== 'open') ? '' : 'none';
-});
 
 /* ========== FRIEND ROOM ==========
    A room is a code somebody reads out over WhatsApp. The server keeps the seats and the
@@ -1948,6 +1954,7 @@ function openStream(){
     ROOM.mySeat = Math.max(0, ROOM.seats.findIndex(s => s.id === ROOM.playerId));
     shownOnline = false;
     newGame(deal.count, 'online', PROFILE.name, deal.len, deal.seats.map(s => s.name));
+    askMic();                                 // asked of everyone, as the game opens
   });
 
   // a guest draws whatever the host says the board looks like
@@ -2055,14 +2062,10 @@ const VOICE = { on:false, mic:null, open:false, peers:new Map(), talking:new Set
 
 const ICE = { iceServers:[{ urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302'] }] };
 
+/* One switch, on the board, and it is the only place voice shows up at all now. */
 function paintVoice(){
-  el('voiceLbl').textContent = VOICE.on ? 'Leave voice' : 'Join voice';
-  el('voiceBtn').classList.toggle('live', VOICE.on);
-  el('pttBtn').style.display = VOICE.on ? '' : 'none';
-  el('pttBtn').textContent = VOICE.open ? 'Mic on' : 'Mic off';
-  el('pttBtn').classList.toggle('hot', VOICE.open);
-  // the same switch follows the match onto the board
   const m = el('micBtn');
+  if(!m) return;
   m.style.display = VOICE.on ? '' : 'none';
   m.textContent   = VOICE.open ? '🎙' : '🔇';
   m.classList.toggle('hot', VOICE.open);
@@ -2169,9 +2172,21 @@ async function startVoice(){
     else if(s.id !== ROOM.playerId) peerFor(s.id);
 }
 
-el('voiceBtn').onclick = () => VOICE.on ? stopVoice() : startVoice();
-el('pttBtn').onclick   = toggleMic;
-el('micBtn').onclick   = toggleMic;
+/* One question, once, at the moment a game starts, and then one switch on the board for
+   the rest of it. Voice used to be a setting to choose a mode in, a button to join with
+   and a second button to talk with - three places to be confused by, before anybody had
+   said anything. Asked at the start it is a yes or a no, and everybody in the game gets
+   asked, not just whoever pressed start. */
+async function askMic(){
+  if(VOICE.on) return;                        // already in, nothing to ask
+  if(!ROOM.code) return;                      // nobody to be heard by
+  if(await ask('Turn your microphone on?',
+               'The others in this game will hear you. You can switch it off any time from the board.',
+               'Mic on', 'Play without', '\u{1F399}'))
+    await startVoice();
+}
+
+el('micBtn').onclick = toggleMic;
 
 /* ---------- the buttons ---------- */
 
