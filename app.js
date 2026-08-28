@@ -63,6 +63,23 @@ const SEATS = { 2:[0,2], 3:[0,1,2], 4:[0,1,2,3], 5:[0,1,2,3,4], 6:[0,1,2,3,4,5] 
 let G = null, S = null;
 let sound = true, tilt = false, busy = false;
 const el = id => document.getElementById(id);
+
+/* Every overlay sits at the same height, so which one you see is decided by which comes
+   later in the file - and How to play is written near the top, above Settings. Opening it
+   from Settings put it behind Settings, so pressing the row appeared to do nothing at all
+   until you backed out, and the first thing a new player does is look for the rules. Same
+   for the shop and the music page, and not for feedback or the policy, which happen to be
+   written below Settings. That is no way to decide what somebody is looking at.
+
+   Whatever is opened goes on top of whatever is already open. */
+function openOverlay(id){
+  const box = typeof id === 'string' ? el(id) : id;
+  if(!box) return;
+  const above = [...document.querySelectorAll('.overlay.show')]
+    .reduce((h, o) => Math.max(h, +getComputedStyle(o).zIndex || 50), 50);
+  box.style.zIndex = above + 1;
+  box.classList.add('show');
+}
 const board = el('board');
 const wait = ms => new Promise(r=>setTimeout(r,ms));
 
@@ -825,7 +842,7 @@ async function finish(){
       <div class="st">${pl.tokens.filter(t=>t===G.LAST).length}/${S.tok} home</div>
     </div>`).join('');
 
-  setTimeout(()=>el('resultModal').classList.add('show'),700);
+  setTimeout(()=>openOverlay('resultModal'),700);
 }
 
 function confetti(){
@@ -923,7 +940,7 @@ function ask(title, text, yes='Yes', no='Cancel', emoji='🎲'){
     el('askYes').onclick = ()=>answer(true);
     el('askNo').onclick  = ()=>answer(false);
     document.addEventListener('keydown', onKey);
-    box.classList.add('show');
+    openOverlay(box);          // it can be asked from inside another box, so it goes on top
   });
 }
 
@@ -1334,7 +1351,7 @@ const music = {
     this.ensure();
     if(this.ctx.state==='suspended') this.ctx.resume();
     this.step=0;
-    const bpm = style==='phonk'?140 : style==='bhangra'?104 : 72;
+    const bpm = 72;
     const stepMs = 60000/bpm/4;
     this.timer = setInterval(()=>{ this.tick(this.step++); }, stepMs);
   },
@@ -1364,7 +1381,9 @@ const music = {
 
   tick(n){
     const s=n%64, bar=Math.floor(n/16)%4;
-    if(this.style==='mellow'){
+    // one loop, and it is this one: slow pads under a sparse bell. Three styles was three
+    // times the code for a thing that plays quietly behind a board game.
+    {
       // slow minor-seventh pads with a sparse bell melody
       const roots=[220,196,174.61,164.81];           // A3 G3 F3 E3
       const r=roots[bar];
@@ -1378,40 +1397,26 @@ const music = {
         this.tone(r*2*Math.pow(2,st/12),1.5,'sine',0.055);
     }
 
-    if(this.style==='phonk'){
-      // half-time trap: 808 slides, cowbell hook, tight hats
-      if(s%16===0||s%16===9) this.tone(70,0.5,'sine',0.32,40);          // kick
-      if(s%16===8||s%16===14) this.hit(0.14,0.16,2600,1.2);             // snare-ish
-      if(s%2===0) this.hit(0.035,0.075,8200,2.4);                       // hat
-      if(s%16===4||s%16===12) this.hit(0.02,0.05,11000,3);              // open-ish
-      const bass=[55,55,49,41.2][bar];
-      if(s%16===0) this.tone(bass,1.5,'sine',0.3,bass*0.72);            // 808 slide
-      const bell=[0,null,null,7,null,10,null,null,7,null,null,3,null,null,null,null];
-      const b=bell[s%16];
-      if(b!==null&&b!==undefined) this.tone(523.25*Math.pow(2,b/12),0.28,'square',0.075);
-    }
-
-    if(this.style==='bhangra'){
-      // dhol-style groove with a plucked tumbi-like riff
-      if(s%8===0) this.tone(88,0.28,'sine',0.26,58);                    // dhol bass
-      if([3,6,11,14].includes(s%16)) this.hit(0.09,0.2,1900,1.6);       // tak
-      if(s%4===2) this.hit(0.05,0.1,5200,2);                            // chimta
-      const riff=[0,7,0,5,0,7,10,7,0,7,0,5,3,0,null,null];
-      const k=riff[s%16];
-      if(k!==null&&k!==undefined) this.tone(293.66*Math.pow(2,k/12),0.22,'sawtooth',0.075);
-      if(s%16===0) this.tone(146.83,1.2,'triangle',0.08);
-    }
   }
 };
 
+/* On or off, and nothing in between. Picking between three tunes was a page of its own for
+   a decision nobody was waiting to make, and how loud it is belongs to the volume buttons
+   on the side of the phone. */
 function setMusic(style){
-  PROFILE.music = style;
-  document.querySelectorAll('#segMusic button').forEach(b=>b.classList.toggle('on', b.dataset.v===style));
-  el('musicHint').textContent = style==='off'
-    ? 'Music is off. Sound effects stay on their own switch.'
-    : 'Original loop generated live in the app — nothing streamed, nothing licensed.';
-  music.play(style);
+  PROFILE.music = style === 'off' ? 'off' : 'mellow';
+  music.play(PROFILE.music);
+  paintMusicBtn();
   saveProfile();
+}
+
+function paintMusicBtn(){
+  const b = el('musicBtn2');
+  if(!b) return;
+  const on = !!(PROFILE && PROFILE.music && PROFILE.music !== 'off');
+  b.textContent = on ? '\u{1F3B5}' : '\u{1F507}';
+  b.classList.toggle('off', !on);
+  b.title = on ? 'Music on' : 'Music off';
 }
 
 // leaving the app should leave silence behind: stop the loop and halt the audio
@@ -1476,25 +1481,16 @@ paintFullscreen();
 
 
 /* ========== SHOP + MUSIC WIRING ========== */
-el('shopBtn').onclick=()=>{ renderShop(); el('shopModal').classList.add('show'); };
-const openMusic = () => el('musicModal').classList.add('show');
-el('musicBtn2').onclick  = openMusic;      // on the board, mid-match
-el('musicMoreRow').onclick = openMusic;    // and on the settings page
+el('shopBtn').onclick=()=>{ renderShop(); openOverlay('shopModal'); };
+// on the board it is the same switch, not a door to a page of choices
+el('musicBtn2').onclick = () => {
+  if(!PROFILE) return;
+  setMusic(PROFILE.music && PROFILE.music !== 'off' ? 'off' : 'mellow');
+};
 el('adCoinsBtn').onclick=async()=>{
   toast('Rewarded ad plays here in the Android build');
   PROFILE.coins += 100; await saveProfile(); renderShop();
   beep(760,.16,'triangle',.13);
-};
-document.querySelectorAll('#segMusic button').forEach(b=>b.onclick=()=>setMusic(b.dataset.v));
-document.querySelectorAll('#segSfx button').forEach(b=>b.onclick=()=>{
-  document.querySelectorAll('#segSfx button').forEach(x=>x.classList.remove('on'));
-  b.classList.add('on'); sound = b.dataset.v==='on';
-  el('soundBtn').textContent = sound?'🔊':'🔇';
-  el('soundBtn').classList.toggle('off',!sound);
-});
-el('volRange').oninput = e => {
-  music.setVolume(e.target.value/100);
-  if(PROFILE){ PROFILE.vol=+e.target.value; saveProfile(); }
 };
 
 let cfgCount=4, cfgMode='cpu', cfgLen='full';
@@ -1535,7 +1531,7 @@ function openMatch(mode){
 el('cpuBtn').onclick=()=>openMatch('cpu');
 el('passBtn').onclick=()=>openMatch('pass');
 el('backHomeBtn').onclick=()=>show('home');
-el('moreCoinsBtn').onclick=()=>{ renderShop(); el('shopModal').classList.add('show'); };
+el('moreCoinsBtn').onclick=()=>{ renderShop(); openOverlay('shopModal'); };
 el('profChip').onclick=()=>openSetup(true);
 
 // title letters, each with its own bounce
@@ -1569,7 +1565,7 @@ el('profChip').onclick=()=>openSetup(true);
 })();
 
 el('playBtn').onclick=()=>newGame(cfgCount,cfgMode,PROFILE.name,cfgLen);
-const openHow = () => el('howModal').classList.add('show');
+const openHow = () => openOverlay('howModal');
 el('rulesBtn').onclick = openHow;          // on the board, mid-match
 el('howRow').onclick   = openHow;          // and on the settings page
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>b.closest('.overlay').classList.remove('show'));
@@ -1816,9 +1812,9 @@ function applyProfileSettings(){
   if(typeof PROFILE.sfx === 'boolean') sound = PROFILE.sfx;
   PROFILE.vol   = PROFILE.vol == null ? 70 : PROFILE.vol;
   applyTheme(PROFILE.theme);
-  music.setVolume(PROFILE.vol/100);
-  el('volRange').value = PROFILE.vol;
-  document.querySelectorAll('#segMusic button').forEach(b=>b.classList.toggle('on', b.dataset.v===PROFILE.music));
+  music.setVolume(PROFILE.vol/100);   // kept as it was; how loud is the device's business
+  paintMusicBtn();
+
 }
 
 // browsers only allow audio after a gesture, so start the loop on first tap
@@ -1851,17 +1847,12 @@ function paintSound(){
     // setMusic already does the lot: the profile, the buttons on the music page, the hint,
     // the loop itself and the save. Turning it off remembers the tune, so turning it back
     // on gives you the one you had rather than whatever the default is.
-    ['Music', () => !!(PROFILE && PROFILE.music && PROFILE.music !== 'off'), on => {
-      if(!PROFILE) return;
-      if(!on && PROFILE.music !== 'off') PROFILE.musicWas = PROFILE.music;
-      setMusic(on ? (PROFILE.musicWas || 'mellow') : 'off');
-    }],
+    ['Music', () => !!(PROFILE && PROFILE.music && PROFILE.music !== 'off'),
+      on => { if(PROFILE) setMusic(on ? 'mellow' : 'off'); }],
     ['Sound effects', () => sound, async on => {
       sound = on;
       el('soundBtn').textContent = sound ? '\u{1F50A}' : '\u{1F507}';
       el('soundBtn').classList.toggle('off', !sound);
-      document.querySelectorAll('#segSfx button')
-              .forEach(b => b.classList.toggle('on', (b.dataset.v === 'on') === sound));
       if(PROFILE){ PROFILE.sfx = sound; await saveProfile(); }
     }]
   ];
@@ -1913,7 +1904,7 @@ function paintSwatches(){
     b.style.setProperty('--sw-gold', t.v['--gold']);
     b.innerHTML = '<i></i>';
     b.title = t.name + (owned ? '' : ` · ${t.price} coins`);
-    b.onclick = () => { owned ? pickTheme(t.id) : (renderShop(), el('shopModal').classList.add('show')); };
+    b.onclick = () => { owned ? pickTheme(t.id) : (renderShop(), openOverlay('shopModal')); };
     wrap.appendChild(b);
   });
 }
@@ -1926,7 +1917,7 @@ async function pickTheme(id){
 
 function openSettings(){
   paintSwatches(); paintSound(); paintRules();
-  el('setModal').classList.add('show');
+  openOverlay('setModal');
 }
 
 
@@ -2122,7 +2113,7 @@ async function showRoomResult(){
   el('resName').textContent  = won ? 'You win!' : 'Match over';
   const got = await reward(won);
   el('resSub').textContent = (me && me.rank ? `You finished #${me.rank}. ` : '') + `+${got} coins`;
-  setTimeout(() => el('resultModal').classList.add('show'), 700);
+  setTimeout(() => openOverlay('resultModal'), 700);
 }
 
 /* ========== VOICE ==========
@@ -2271,13 +2262,13 @@ el('micBtn').onclick = toggleMic;
 el('feedbackRow').onclick = () => {
   el('fbText').value = ''; el('fbMsg').textContent = '';
   el('fbSend').disabled = false; el('fbSend').textContent = 'SEND';
-  el('fbModal').classList.add('show');
+  openOverlay('fbModal');
   setTimeout(() => el('fbText').focus(), 120);
 };
 
 el('privacyRow').onclick = () => {
   el('privModal').querySelector('.policy').scrollTop = 0;
-  el('privModal').classList.add('show');
+  openOverlay('privModal');
 };
 
 el('fbSend').onclick = async () => {
