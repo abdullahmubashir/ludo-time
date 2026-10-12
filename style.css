@@ -446,20 +446,6 @@ input::placeholder{color:#7d8fa4}
 .confetti{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden}
 .cf{position:absolute;width:9px;height:14px;animation:fall linear forwards}
 @keyframes fall{to{transform:translateY(105dvh) rotate(760deg)}}
-/* Less motion means no motion, not the same motion a thousand times faster. Every
-   animation was being cut to a single millisecond, which does stop the ones that run
-   once - but the twelve that loop for ever then repeat a thousand times a second. The
-   banner, the dice, the pieces, the whole screen turned into a blur, which is the exact
-   opposite of what somebody asking for less movement wants.
-
-   Two things have to be said separately, because they are invisible until their own
-   animation shows them: the back note starts at nothing and is faded up, and the
-   confetti is only ever on its way down. */
-@media (prefers-reduced-motion:reduce){
-  *{animation:none !important;transition-duration:.05s !important}
-  .backnote{opacity:1 !important}
-  .cf{display:none !important}
-}
 
 /* A short window - a laptop browser at half height, or a phone turned sideways - has the
    same rhythm to fit into a good deal less room. Everything draws in a little rather than
@@ -1272,3 +1258,25 @@ button.rulerow{width:100%;background:none;border:0;border-bottom:1px solid var(-
   text-transform:uppercase;color:var(--gold);margin:16px 0 5px}
 .policy h3:first-child{margin-top:2px}
 .policy p{font-size:13.5px;line-height:1.6;color:var(--muted);margin:0}
+
+/* Reduced, not removed.
+
+   What was wrong here was never that these animations ran - it was that every one of
+   them was being cut to a single millisecond. That does stop the ones that run once,
+   which is presumably what it was for, but the twelve that loop then repeated a
+   thousand times a second and the whole screen blurred.
+
+   So they stay, slower. Nothing here moves more than eight pixels or turns more than a
+   few degrees - a logo letter lifting, a piece floating in the banner, a light crossing
+   a button - and motion that small is not what somebody is asking to be spared.
+
+   The cues a player actually reads keep their own pace: which piece can move, which die
+   is live, where a throw would land. Slowing those down is slowing the game down. */
+@media (prefers-reduced-motion:reduce){
+  .pip-mini{animation-duration:4s}
+  #bigLogo .lt-ludo b{animation-duration:4s}
+  .big-btn::after{animation-duration:5.6s}
+  .shine::before{animation-duration:13s}
+  .banner .goti{animation-duration:7s}
+  .banner .bnr-die{animation-duration:7.8s}
+}
