@@ -155,8 +155,10 @@ export function startGame({ code, playerId, count, len }){
     len  : room.len,
     seats: room.seats.map(s => ({ id:s.id, name:s.name, avatar:s.avatar }))
   };
+  /* tellEveryone means everyone, the host included - so saying it again to the host was
+     saying it twice, and the host dealt the board twice over. The second deal threw away
+     the first, turn and all, while the guests kept the one they had been given. */
   tellEveryone(room, 'start', deal);
-  post(room.seats.find(s => s.id === playerId) || {}, 'start', deal);
   return { ok:true, deal };
 }
 

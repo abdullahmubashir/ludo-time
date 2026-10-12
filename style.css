@@ -213,10 +213,6 @@ input::placeholder{color:#7d8fa4}
   animation:shineRun 9s cubic-bezier(.4,0,.2,1) infinite}
 
 
-@media (prefers-reduced-motion:reduce){
-  .hero{animation:none}
-  
-}
 /* ---------- the name, as Abdullah drew it ----------
    LUDO blocked out over TIME: four letters in the players' colours, each leaning against
    the one before it, cut out with a dark edge and sitting on a hard drop shadow so they
@@ -450,7 +446,20 @@ input::placeholder{color:#7d8fa4}
 .confetti{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden}
 .cf{position:absolute;width:9px;height:14px;animation:fall linear forwards}
 @keyframes fall{to{transform:translateY(105dvh) rotate(760deg)}}
-@media (prefers-reduced-motion:reduce){*{animation-duration:.001s !important;transition-duration:.05s !important}}
+/* Less motion means no motion, not the same motion a thousand times faster. Every
+   animation was being cut to a single millisecond, which does stop the ones that run
+   once - but the twelve that loop for ever then repeat a thousand times a second. The
+   banner, the dice, the pieces, the whole screen turned into a blur, which is the exact
+   opposite of what somebody asking for less movement wants.
+
+   Two things have to be said separately, because they are invisible until their own
+   animation shows them: the back note starts at nothing and is faded up, and the
+   confetti is only ever on its way down. */
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important;transition-duration:.05s !important}
+  .backnote{opacity:1 !important}
+  .cf{display:none !important}
+}
 
 /* A short window - a laptop browser at half height, or a phone turned sideways - has the
    same rhythm to fit into a good deal less room. Everything draws in a little rather than
